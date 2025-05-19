@@ -1,0 +1,442 @@
+/* @tailwind base;
+@tailwind components; */
+@tailwind utilities;
+@import "tailwindcss";
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+/* dark mode , light mode */
+:root {
+  --font-family-G: "Gantari";
+  --font-family-L: "Lora";
+  --theme-color: #0d0d0d;
+  /* #0d0d0d , white */
+  --bg-blank: #333;
+  /* #D9D9D9 , #333 */
+  --funnel-theme-color: "#F2F2F2";
+  /* #1A1A1A , --grayscale-200 */
+  --theme-alter-color: "#000";
+  /* #FFF , #000 */
+  --theme-filter-color: "#F5F5F9";
+  /* #151515 , #F5F5F9 */
+  --dark-theme-color: "#FFF";
+  /* #0D0D0D , #FFF */
+  --filter-border-color: "#D6D7DD";
+  /* #2E2F37 , #D6D7DD */
+  --theme-search-color: "#FAFAFA";
+  /* #121212 , #FAFAFA */
+  --table-header-color: "#E4E4E4";
+  /* #282828 , #E4E4E4 */
+  --footer-theme-color: "#D1D1D1";
+  /* #3B3B3B , #D1D1D1 */
+  --model-overlay-color: "#00000026"
+    /* #6d6d6d26, #00000026 */
+    --grayscale-0: rgba(255, 255, 255, 1);
+  --grayscale-100: rgba(250, 250, 250, 1);
+  --grayscale-20: rgba(255, 255, 255, 1);
+  --grayscale-200: rgba(242, 242, 242, 1);
+  --grayscale-2100: rgba(251, 251, 253, 1);
+  --grayscale-2200: rgba(245, 245, 249, 1);
+  --grayscale-2300: rgba(237, 238, 242, 1);
+  --grayscale-2400: rgba(227, 228, 233, 1);
+  --grayscale-2500: rgba(214, 215, 221, 1);
+  --grayscale-2600: rgba(197, 198, 205, 1);
+  --grayscale-2700: rgba(177, 178, 184, 1);
+  --grayscale-2800: rgba(154, 155, 160, 1);
+  --grayscale-2900: rgba(130, 131, 135, 1);
+  --grayscale-300: rgba(228, 228, 228, 1);
+  --grayscale-400: rgba(209, 209, 209, 1);
+  --grayscale-500: rgba(182, 182, 182, 1);
+  --grayscale-600: rgba(148, 148, 148, 1);
+  --grayscale-700: rgba(104, 104, 104, 1);
+  --grayscale-800: rgba(53, 53, 53, 1);
+  --grayscale-900: rgba(0, 0, 0, 1);
+  --heading-h1-bold-font-family: "Poppins-Bold", Helvetica;
+  --heading-h1-bold-font-size: 49px;
+  --heading-h1-bold-font-style: normal;
+  --heading-h1-bold-font-weight: 700;
+  --heading-h1-bold-letter-spacing: 0px;
+  --heading-h1-bold-line-height: normal;
+  --heading-h1-medium-font-family: "Poppins-Medium", Helvetica;
+  --heading-h1-medium-font-size: 49px;
+  --heading-h1-medium-font-style: normal;
+  --heading-h1-medium-font-weight: 500;
+  --heading-h1-medium-letter-spacing: 0px;
+  --heading-h1-medium-line-height: normal;
+  --heading-h1-regular-font-family: "Poppins-Regular", Helvetica;
+  --heading-h1-regular-font-size: 49px;
+  --heading-h1-regular-font-style: normal;
+  --heading-h1-regular-font-weight: 400;
+  --heading-h1-regular-letter-spacing: 0px;
+  --heading-h1-regular-line-height: normal;
+  --heading-h1-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --heading-h1-semibold-font-size: 49px;
+  --heading-h1-semibold-font-style: normal;
+  --heading-h1-semibold-font-weight: 600;
+  --heading-h1-semibold-letter-spacing: 0px;
+  --heading-h1-semibold-line-height: normal;
+  --heading-h2-bold-font-family: "Poppins-Bold", Helvetica;
+  --heading-h2-bold-font-size: 39px;
+  --heading-h2-bold-font-style: normal;
+  --heading-h2-bold-font-weight: 700;
+  --heading-h2-bold-letter-spacing: 0px;
+  --heading-h2-bold-line-height: normal;
+  --heading-h2-medium-font-family: "Poppins-Medium", Helvetica;
+  --heading-h2-medium-font-size: 39px;
+  --heading-h2-medium-font-style: normal;
+  --heading-h2-medium-font-weight: 500;
+  --heading-h2-medium-letter-spacing: 0px;
+  --heading-h2-medium-line-height: normal;
+  --heading-h2-regular-font-family: "Poppins-Regular", Helvetica;
+  --heading-h2-regular-font-size: 39px;
+  --heading-h2-regular-font-style: normal;
+  --heading-h2-regular-font-weight: 400;
+  --heading-h2-regular-letter-spacing: 0px;
+  --heading-h2-regular-line-height: normal;
+  --heading-h2-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --heading-h2-semibold-font-size: 39px;
+  --heading-h2-semibold-font-style: normal;
+  --heading-h2-semibold-font-weight: 600;
+  --heading-h2-semibold-letter-spacing: 0px;
+  --heading-h2-semibold-line-height: normal;
+  --heading-h3-bold-font-family: "Poppins-Bold", Helvetica;
+  --heading-h3-bold-font-size: 31px;
+  --heading-h3-bold-font-style: normal;
+  --heading-h3-bold-font-weight: 700;
+  --heading-h3-bold-letter-spacing: 0px;
+  --heading-h3-bold-line-height: normal;
+  --heading-h3-medium-font-family: "Poppins-Medium", Helvetica;
+  --heading-h3-medium-font-size: 31px;
+  --heading-h3-medium-font-style: normal;
+  --heading-h3-medium-font-weight: 500;
+  --heading-h3-medium-letter-spacing: 0px;
+  --heading-h3-medium-line-height: normal;
+  --heading-h3-regular-font-family: "Poppins-Regular", Helvetica;
+  --heading-h3-regular-font-size: 31px;
+  --heading-h3-regular-font-style: normal;
+  --heading-h3-regular-font-weight: 400;
+  --heading-h3-regular-letter-spacing: 0px;
+  --heading-h3-regular-line-height: normal;
+  --heading-h3-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --heading-h3-semibold-font-size: 31px;
+  --heading-h3-semibold-font-style: normal;
+  --heading-h3-semibold-font-weight: 600;
+  --heading-h3-semibold-letter-spacing: 0px;
+  --heading-h3-semibold-line-height: normal;
+  --paregraph-p1-bold-font-family: "Poppins-Bold", Helvetica;
+  --paregraph-p1-bold-font-size: 25px;
+  --paregraph-p1-bold-font-style: normal;
+  --paregraph-p1-bold-font-weight: 700;
+  --paregraph-p1-bold-letter-spacing: 0px;
+  --paregraph-p1-bold-line-height: normal;
+  --paregraph-p1-medium-font-family: "Poppins-Medium", Helvetica;
+  --paregraph-p1-medium-font-size: 25px;
+  --paregraph-p1-medium-font-style: normal;
+  --paregraph-p1-medium-font-weight: 500;
+  --paregraph-p1-medium-letter-spacing: 0px;
+  --paregraph-p1-medium-line-height: normal;
+  --paregraph-p1-regular-font-family: "Poppins-Regular", Helvetica;
+  --paregraph-p1-regular-font-size: 25px;
+  --paregraph-p1-regular-font-style: normal;
+  --paregraph-p1-regular-font-weight: 400;
+  --paregraph-p1-regular-letter-spacing: 0px;
+  --paregraph-p1-regular-line-height: normal;
+  --paregraph-p1-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --paregraph-p1-semibold-font-size: 25px;
+  --paregraph-p1-semibold-font-style: normal;
+  --paregraph-p1-semibold-font-weight: 600;
+  --paregraph-p1-semibold-letter-spacing: 0px;
+  --paregraph-p1-semibold-line-height: normal;
+  --paregraph-p2-bold-font-family: "Poppins-Bold", Helvetica;
+  --paregraph-p2-bold-font-size: 20px;
+  --paregraph-p2-bold-font-style: normal;
+  --paregraph-p2-bold-font-weight: 700;
+  --paregraph-p2-bold-letter-spacing: 0px;
+  --paregraph-p2-bold-line-height: normal;
+  --paregraph-p2-medium-font-family: "Poppins-Medium", Helvetica;
+  --paregraph-p2-medium-font-size: 20px;
+  --paregraph-p2-medium-font-style: normal;
+  --paregraph-p2-medium-font-weight: 500;
+  --paregraph-p2-medium-letter-spacing: 0px;
+  --paregraph-p2-medium-line-height: normal;
+  --paregraph-p2-regular-font-family: "Poppins-Regular", Helvetica;
+  --paregraph-p2-regular-font-size: 20px;
+  --paregraph-p2-regular-font-style: normal;
+  --paregraph-p2-regular-font-weight: 400;
+  --paregraph-p2-regular-letter-spacing: 0px;
+  --paregraph-p2-regular-line-height: normal;
+  --paregraph-p2-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --paregraph-p2-semibold-font-size: 20px;
+  --paregraph-p2-semibold-font-style: normal;
+  --paregraph-p2-semibold-font-weight: 600;
+  --paregraph-p2-semibold-letter-spacing: 0px;
+  --paregraph-p2-semibold-line-height: normal;
+  --paregraph-p3-bold-font-family: "Poppins-Bold", Helvetica;
+  --paregraph-p3-bold-font-size: 16px;
+  --paregraph-p3-bold-font-style: normal;
+  --paregraph-p3-bold-font-weight: 700;
+  --paregraph-p3-bold-letter-spacing: 0px;
+  --paregraph-p3-bold-line-height: normal;
+  --paregraph-p3-medium-font-family: "Poppins-Medium", Helvetica;
+  --paregraph-p3-medium-font-size: 16px;
+  --paregraph-p3-medium-font-style: normal;
+  --paregraph-p3-medium-font-weight: 500;
+  --paregraph-p3-medium-letter-spacing: 0px;
+  --paregraph-p3-medium-line-height: normal;
+  --paregraph-p3-regular-font-family: "Poppins-Regular", Helvetica;
+  --paregraph-p3-regular-font-size: 16px;
+  --paregraph-p3-regular-font-style: normal;
+  --paregraph-p3-regular-font-weight: 400;
+  --paregraph-p3-regular-letter-spacing: 0px;
+  --paregraph-p3-regular-line-height: normal;
+  --paregraph-p3-semibold-font-family: "Poppins-SemiBold", Helvetica;
+  --paregraph-p3-semibold-font-size: 16px;
+  --paregraph-p3-semibold-font-style: normal;
+  --paregraph-p3-semibold-font-weight: 600;
+  --paregraph-p3-semibold-letter-spacing: 0px;
+  --paregraph-p3-semibold-line-height: normal;
+}
+
+body {
+  background-color: var(--theme-color);
+}
+
+.menu li a:hover:after {
+  width: 100%;
+  left: 0;
+}
+
+/* tailwind.css */
+@layer utilities {
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .loader {
+    border: 4px solid rgba(0, 0, 0, 0.3);
+    border-top: 4px solid #151542;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* styles.css */
+.rc-slider {
+  border-radius: 6px;
+  height: 14px;
+  padding: 5px 0;
+  position: relative;
+  touch-action: none;
+  width: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  box-sizing: border-box;
+}
+
+.rc-slider-dot {
+  width: 5px;
+  height: 6px;
+  background-color: var(--theme-filter-color);
+  border: none;
+  border-radius: 0%;
+}
+
+.rc-slider-rail {
+  background-color: var(--footer-theme-color);
+  height: 6px;
+}
+
+.rc-slider-track {
+  background-color: var(--theme-alter-color);
+  height: 6px;
+}
+
+/* .rc-slider-mark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 25px;
+} */
+.rc-slider-mark {
+  position: relative;
+  top: -20px;
+  width: 100%;
+  height: inherit;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rc-slider-mark-text {
+  color: var(--grayscale-700);
+  position: absolute;
+  transform: translateX(-32%) !important;
+  /* width: 100%; */
+  text-align: center;
+}
+
+/* .rc-slider-mark-text {
+  transform: translateX(30px) translateY(-35px) !important;
+} */
+
+.rc-slider-step {
+  background: #0000;
+  height: 4px;
+  position: absolute;
+  width: 100%;
+}
+
+.rc-slider-handle {
+  background: var(--grayscale-700);
+  border: none;
+  height: 24px !important;
+  margin-top: -10px;
+  opacity: 1;
+  position: absolute;
+  width: 24px !important;
+}
+
+.rc-slider-handle:hover {
+  box-shadow: 0 0 0 7px rgba(27, 27, 27, 0.102) !important;
+}
+
+.rc-slider-handle:active {
+  box-shadow: 0 0 0 8px #1b1b1b1a;
+}
+
+.rc-slider-handle-dragging {
+  border-color: none;
+}
+
+.rc-slider-dot-active {
+  border-color: #151542;
+}
+
+.rc-slider-handle-dragging.rc-slider-handle-dragging.rc-slider-handle-dragging {
+  border-color: #151542;
+  box-shadow: 0 0 0 8px #1b1b1b1a;
+}
+
+.rc-slider-handle:focus-visible {
+  border-color: gray;
+  box-shadow: 0 0 0 3px #c5c0c0d4;
+}
+
+/* Navbar css */
+.close-menu,
+.open-menu {
+  position: absolute;
+  cursor: pointer;
+  display: none;
+}
+
+.open-menu {
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+.close-menu {
+  top: 20px;
+  right: 20px;
+}
+
+#check {
+  display: none;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  /* -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none; */
+  /* user-select: none; */
+}
+
+body:focus {
+  outline: none !important;
+}
+
+@media (max-width: 800px) {
+  .menu {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 73%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    z-index: 100;
+    background-color: #000;
+    color: #fff;
+    transition: all 0.5s ease-in-out;
+    text-transform: uppercase;
+    font-size: 24px;
+  }
+
+  .menu li {
+    margin-top: 40px;
+  }
+
+  .menu li a {
+    padding: 10px;
+  }
+
+  .close-menu,
+  .open-menu {
+    display: block;
+  }
+
+  #check:checked~.menu {
+    right: 0;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--theme-color);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

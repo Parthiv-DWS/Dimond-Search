@@ -1,0 +1,7 @@
+/.vscode/
+/src/
+/.eslintrc.js
+/.nvmrc
+/babel.config.js
+/Jenkinsfile
+/tsconfig.json
