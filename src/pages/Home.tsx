@@ -35,6 +35,7 @@ const Home: FC = () => {
           range
           min
           max
+          isAdvance
           options {
               label
               value

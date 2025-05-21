@@ -7,8 +7,9 @@ import ChevroUpIcon from "../../assets/custom-icons/ChevroUpIcon";
 const Shape: FC<{
   filteredData: FilterGlobalType;
   setFilteredData: React.Dispatch<React.SetStateAction<FilterGlobalType>>;
-}> = ({ filteredData, setFilteredData }) => {
-  const { isDarkMode, diamondFilterData } = useModeStore((state) => state);
+  item?: any;
+}> = ({ filteredData, setFilteredData , item}) => {
+  const { isDarkMode } = useModeStore((state) => state);
   const [openShape, setOpenShape] = useState<boolean>(true);
 
   const handleClickedShape = (value: string) => {
@@ -39,7 +40,7 @@ const Shape: FC<{
               maxHeight: openShape ? "14rem" : "2000px",
             }}
           >
-            {diamondFilterData?.shape?.options?.map(
+            {item.options?.map(
               (item: { label: string; value: string; image: string }) => (
                 <button
                   key={item?.value}
