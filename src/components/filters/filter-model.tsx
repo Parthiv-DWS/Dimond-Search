@@ -203,7 +203,7 @@ const FilterModel: FC<{
                   ) {
                     // Determine value and onChange logic based on attribute_code
                     let value: [number, number] = [0, 0];
-                    let onChange = (v: [number, number]) => {};
+                    let onChange: (v: [number, number]) => void = () => {};
                     if (item.attribute_code === "rapnet_price") {
                       value = [
                         modelFilteredValue?.price?.minPrice ?? Number(item.min),
@@ -386,7 +386,7 @@ const FilterModel: FC<{
                   ].includes(item.attribute_code)
                 ) {
                   let value: [number, number] = [0, 0];
-                  let onChange = (v: [number, number]) => {};
+                  let onChange: ([min, max]: [number, number]) => void = () => {};
                   if (item.attribute_code === "weight") {
                     value = [
                       modelFilteredValue?.weight?.minWeight ?? Number(item.min),

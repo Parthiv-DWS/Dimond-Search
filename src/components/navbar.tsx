@@ -3,7 +3,7 @@ import SearchIcon from "../assets/custom-icons/SearchIcon";
 import { FC, useEffect, useRef, useState } from "react";
 import ShoppingCartIcon from "../assets/custom-icons/ShoppingCartIcon";
 import UserIcon from "../assets/custom-icons/UserIcon";
-import Hamburger from "../assets/custom-icons/ Hamburger";
+import Hamburger from "../assets/custom-icons/Hamburger";
 import { useModeStore } from "../store/theme-mode/store";
 import { Transition } from "@headlessui/react";
 import CloseIcon from "../assets/custom-icons/CloseIcon";
