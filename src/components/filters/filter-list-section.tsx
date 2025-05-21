@@ -525,7 +525,7 @@ const FilterListSection: FC<{
               {[...dynamicDiamondFilterData]
                 .filter(
                   (item: any) =>
-                    item.attribute_code !== "shape" &&
+                    item.attribute_code !== "shape" && !item.isAdvance &&
                     item.attribute_code !==
                       (globalFilterData.colorType === "mined"
                         ? "fancy_color"
@@ -664,6 +664,7 @@ const FilterListSection: FC<{
                 setFilteredData={setFilteredData}
                 filteredValue={filteredValue}
                 setFilteredValue={setFilteredValue}
+                globalFilterData={globalFilterData}
               />
             </div>
           </Transition>

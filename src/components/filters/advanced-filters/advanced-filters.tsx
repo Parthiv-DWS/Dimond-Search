@@ -1,6 +1,10 @@
 import { FC, JSX } from "react";
 import Slider from "rc-slider";
-import { FilterGlobalType, FilteredValueType } from "../../../types";
+import {
+  FilterGlobalType,
+  FilteredValueType,
+  GlobalFilterType,
+} from "../../../types";
 import { FilterSliderData } from "../../../utility/utils";
 import { useModeStore } from "../../../store/theme-mode/store";
 import MinMaxInput from "../MinMaxInput";
@@ -10,11 +14,13 @@ export const AdvancedFilteres: FC<{
   setFilteredData: React.Dispatch<React.SetStateAction<FilterGlobalType>>;
   filteredValue: FilteredValueType;
   setFilteredValue: React.Dispatch<React.SetStateAction<FilteredValueType>>;
+  globalFilterData: GlobalFilterType;
 }> = ({
   filteredData,
   setFilteredData,
   filteredValue,
   setFilteredValue,
+  globalFilterData,
 }): JSX.Element => {
   const { diamondFilterData } = useModeStore((state) => state);
   const dynamicDiamondFilterData = Object.values(diamondFilterData);
@@ -64,7 +70,15 @@ export const AdvancedFilteres: FC<{
     <div className="relative">
       <div className="grid grid-cols-2 gap-6 w-full gap-y-6">
         {[...dynamicDiamondFilterData]
-          .filter((item: any) => item.attribute_code !== "shape")
+          .filter(
+            (item: any) =>
+              item.attribute_code !== "shape" &&
+              item.isAdvance &&
+              item.attribute_code !==
+                (globalFilterData.colorType === "mined"
+                  ? "fancy_color"
+                  : "color")
+          )
           .sort((a, b) =>
             (a as { attribute_code: string }).attribute_code === "certificates"
               ? 1
