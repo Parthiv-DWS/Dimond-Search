@@ -62,6 +62,10 @@ export const getFilteredObjFromDiamondFilterData = (data) => {
           minPrice: Number(allData?.rapnet_price?.min),
           maxPrice: Number(allData?.rapnet_price?.max),
         },
+        weight: {
+          minWeight: Number(allData?.weight?.min),
+          maxWeight: Number(allData?.weight?.max),
+        },
         carat: {
           minCarat: Number(allData?.size?.min),
           maxCarat: Number(allData?.size?.max),

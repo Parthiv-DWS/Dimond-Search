@@ -313,6 +313,17 @@ export const getFilters = () => {
         8: "",
       },
     },
+    lab: {
+      min: 0,
+      max: 5,
+      data: {
+        0: "AGS",
+        1: "GIA",
+        2: "HRD",
+        3: "IGI",
+        4: "None",
+      },
+    },
     fancy_color: {
       min: 2,
       max: 4,
@@ -341,8 +352,8 @@ export const getFilters = () => {
       },
     },
     cut: {
-      min: 1,
-      max: 3,
+      min: 0,
+      max: 5,
       data: {
         0: "Good",
         1: "Very Good",
@@ -497,6 +508,7 @@ export const getInitialFilteredData = (): FilterGlobalType => {
       maxCarat: 30,
     },
     color: [allFilters?.color?.min, allFilters?.color?.max],
+    lab: [allFilters?.lab?.min, allFilters?.lab?.max],
     fancy_color: [allFilters?.fancy_color?.min, allFilters?.fancy_color?.max],
     polish: [0, 0],
     clarity: [allFilters?.clarity?.min, allFilters?.clarity?.max],
@@ -508,6 +520,10 @@ export const getInitialFilteredData = (): FilterGlobalType => {
     table_percentage: {
       minTable: 0,
       maxTable: 100,
+    },
+    weight: {
+      minWeight: 0,
+      maxWeight: 100,
     },
     symmetry: [0, 0],
     fluorescence: [0, 0],

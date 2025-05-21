@@ -3,22 +3,17 @@ import Slider from "rc-slider";
 import _ from "lodash";
 import { Transition } from "@headlessui/react";
 import Shape from "./shape";
-import Price from "./price";
-import Carat from "./carat";
 import {
   CLARITY,
-  CLARITY_TITLE,
   COLOR,
-  COLOR_TITLE,
+  CUT,
   FANCY_COLOR,
   FANCY_COLOR_TITLE,
   FLUORESCENCE_INTENSITY,
+  LAB,
   MINED,
   MINED_TITLE,
   POLISH,
-  SLIDER_CLARITY,
-  SLIDER_COLOR,
-  SLIDER_FANCY_COLOR,
   SYMMETRY,
 } from "../../constants";
 import { getInitialFilteredData } from "../../utility/utils";
@@ -38,6 +33,7 @@ import ModalOverlay from "../model-overlay";
 import FilterModel from "./filter-model";
 import { getFilteredObjFromDiamondFilterData } from "../../services/getFilteredObjFromDiamondFilterData";
 import EditHideIcon from "../../assets/custom-icons/EditHideIcon";
+import MinMaxInput from "./MinMaxInput";
 
 const FilterListSection: FC<{
   filteredData: FilterGlobalType;
@@ -63,7 +59,7 @@ const FilterListSection: FC<{
 
   const [filteredValue, setFilteredValue] = useState<FilteredValueType>({
     price: filteredData?.price || initialFilteredData.price,
-    sliderPriceValue: [
+    rapnet_price: [
       filteredData?.price?.minPrice ||
         initialFilteredData?.price?.minPrice ||
         0,
@@ -71,37 +67,40 @@ const FilterListSection: FC<{
         initialFilteredData?.price?.maxPrice ||
         0,
     ],
-
-    carat: filteredData?.carat || initialFilteredData?.carat,
-    sliderCaratValue: [
-      filteredData?.carat?.minCarat ||
-        initialFilteredData?.carat?.minCarat ||
+    weight: [
+      filteredData?.weight?.minWeight ||
+        initialFilteredData?.weight?.minWeight ||
         0,
-      filteredData?.carat?.maxCarat ||
-        initialFilteredData?.carat?.maxCarat ||
+      filteredData?.weight?.maxWeight ||
+        initialFilteredData?.weight?.maxWeight ||
         0,
     ],
-
-    depth_percentage: filteredData?.depth_percentage,
-    sliderDepthValue: [
-      parseFloat(diamondFilterData?.depth_percentage?.min),
-      parseFloat(diamondFilterData?.depth_percentage?.max),
+    table_percentage: [
+      filteredData?.table_percentage?.minTable ||
+        initialFilteredData?.table_percentage?.minTable ||
+        0,
+      filteredData?.table_percentage?.maxTable ||
+        initialFilteredData?.table_percentage?.maxTable ||
+        0,
     ],
 
-    table_percentage: filteredData?.table_percentage,
-    sliderTableValue: [
-      parseFloat(diamondFilterData?.table_percentage?.min),
-      parseFloat(diamondFilterData?.table_percentage?.max),
+    depth_percentage: [
+      filteredData?.depth_percentage?.minDepth ||
+        initialFilteredData?.depth_percentage?.minDepth ||
+        0,
+      filteredData?.depth_percentage?.maxDepth ||
+        initialFilteredData?.depth_percentage?.maxDepth ||
+        0,
     ],
+    color: filteredData?.color || initialFilteredData?.color,
+    lab: filteredData?.lab || initialFilteredData?.lab,
+    cut: filteredData?.cut || initialFilteredData?.cut,
 
-    sliderColorValue: filteredData?.color || initialFilteredData?.color,
+    fancy_color: filteredData?.fancy_color || initialFilteredData?.fancy_color,
 
-    sliderFancyColorValue:
-      filteredData?.fancy_color || initialFilteredData?.fancy_color,
+    clarity: filteredData?.clarity || initialFilteredData?.clarity,
 
-    sliderClarityValue: filteredData?.clarity || initialFilteredData?.clarity,
-
-    sliderFluorescenceValue: filteredData?.[FLUORESCENCE_INTENSITY] || [
+    fluorescence: filteredData?.[FLUORESCENCE_INTENSITY] || [
       0,
       diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options
         ? Object.keys(diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options)
@@ -109,9 +108,9 @@ const FilterListSection: FC<{
         : 0,
     ],
 
-    sliderPolishValue: filteredData?.polish || initialFilteredData?.polish,
+    polish: filteredData?.polish || initialFilteredData?.polish,
 
-    sliderSymmetryValue: filteredData?.symmetry || [
+    symmetry: filteredData?.symmetry || [
       0,
       diamondFilterData?.symmetry?.options
         ? Object.keys(diamondFilterData?.symmetry?.options).length - 1
@@ -148,11 +147,15 @@ const FilterListSection: FC<{
     return {
       shape: filterObj?.shape || initialFilteredData?.shape,
       price: filterObj?.price || initialFilteredData?.price,
-      carat: filterObj?.carat || initialFilteredData.carat,
-      depth_percentage: filterObj?.depth_percentage,
-      table_percentage: filterObj?.table_percentage,
+      weight: filterObj?.weight || initialFilteredData?.weight,
+      depth_percentage:
+        filterObj?.depth_percentage || initialFilteredData?.depth_percentage,
+      table_percentage:
+        filterObj?.table_percentage || initialFilteredData?.table_percentage,
 
       color: getMinMaxObj(COLOR),
+      lab: getMinMaxObj(LAB),
+      cut: getMinMaxObj(CUT),
       fancy_color: getMinMaxObj(FANCY_COLOR),
       clarity: getMinMaxObj(CLARITY),
       fluorescence: getMinMaxObj(FLUORESCENCE_INTENSITY),
@@ -199,45 +202,33 @@ const FilterListSection: FC<{
           minPrice: Number(diamondFilterData?.rapnet_price?.min),
           maxPrice: Number(diamondFilterData?.rapnet_price?.max),
         },
-        sliderPriceValue: [
+        rapnet_price: [
           Number(diamondFilterData?.rapnet_price?.min),
           Number(diamondFilterData?.rapnet_price?.max),
         ],
-        carat: {
-          minCarat: Number(diamondFilterData?.size?.min),
-          maxCarat: Number(diamondFilterData?.size?.max),
-        },
-        sliderCaratValue: [
-          Number(diamondFilterData?.size?.min),
-          Number(diamondFilterData?.size?.max),
+        weight: [
+          Number(diamondFilterData?.weight?.min),
+          Number(diamondFilterData?.weight?.max),
         ],
-        depth_percentage: {
-          minDepth: parseFloat(diamondFilterData?.depth_percentage?.min),
-          maxDepth: parseFloat(diamondFilterData?.depth_percentage?.max),
-        },
-        sliderDepthValue: [
+        depth_percentage: [
           parseFloat(diamondFilterData?.depth_percentage?.min),
           parseFloat(diamondFilterData?.depth_percentage?.max),
         ],
-        table_percentage: {
-          minTable: parseFloat(diamondFilterData?.table_percentage?.min),
-          maxTable: parseFloat(diamondFilterData?.table_percentage?.max),
-        },
-        sliderTableValue: [
+        table_percentage: [
           parseFloat(diamondFilterData?.table_percentage?.min),
           parseFloat(diamondFilterData?.table_percentage?.max),
         ],
 
-        sliderColorValue:
-          filteredDataBackUp?.color || initialFilteredData?.color,
+        color: filteredDataBackUp?.color || initialFilteredData?.color,
+        cut: filteredDataBackUp?.cut || initialFilteredData?.cut,
+        lab: filteredDataBackUp?.lab || initialFilteredData?.lab,
 
-        sliderFancyColorValue:
+        fancy_color:
           filteredDataBackUp?.fancy_color || initialFilteredData?.fancy_color,
 
-        sliderClarityValue:
-          filteredDataBackUp?.clarity || initialFilteredData?.clarity,
+        clarity: filteredDataBackUp?.clarity || initialFilteredData?.clarity,
 
-        sliderFluorescenceValue: filteredDataBackUp?.fluorescence || [
+        fluorescence: filteredDataBackUp?.fluorescence || [
           0,
           diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options
             ? Object.keys(diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options)
@@ -245,17 +236,15 @@ const FilterListSection: FC<{
             : 0,
         ],
 
-        sliderPolishValue:
-          filteredDataBackUp?.polish || initialFilteredData?.polish,
+        polish: filteredDataBackUp?.polish || initialFilteredData?.polish,
 
-        sliderSymmetryValue: filteredDataBackUp?.symmetry || [
+        symmetry: filteredDataBackUp?.symmetry || [
           0,
           diamondFilterData?.symmetry?.options
             ? Object.keys(diamondFilterData?.symmetry?.options).length - 1
             : 0,
         ],
       });
-
       // here we are not reseting Certificates
     } else {
       console.error("Error in resetting filter");
@@ -265,6 +254,7 @@ const FilterListSection: FC<{
     diamondFilterData,
     filteredDataBackUp?.clarity,
     filteredDataBackUp?.color,
+    filteredDataBackUp?.lab,
     filteredDataBackUp?.fancy_color,
     filteredDataBackUp?.[FLUORESCENCE_INTENSITY],
     filteredDataBackUp?.polish,
@@ -324,16 +314,23 @@ const FilterListSection: FC<{
       _.findIndex(data(FLUORESCENCE_INTENSITY), {
         value: modelFilteredValue?.[FLUORESCENCE_INTENSITY]?.max,
       }) + 1;
-
+    const minLab = _.findIndex(data(LAB), {
+      value: modelFilteredValue?.[LAB]?.min,
+    });
+    const maxLab =
+      _.findIndex(data(LAB), {
+        value: modelFilteredValue?.[LAB]?.max,
+      }) + 1;
     setFilteredData({
       ...filteredData,
       shape: modelFilteredValue?.shape,
       price: modelFilteredValue?.price,
-      carat: modelFilteredValue?.carat,
+      weight: modelFilteredValue?.weight,
       depth_percentage: modelFilteredValue?.depth_percentage,
       table_percentage: modelFilteredValue?.table_percentage,
 
       color: [minColor, maxColor],
+      lab: [minLab, maxLab],
       fancy_color: [minFancyColor, maxFancyColor],
       clarity: [minClarity, maxClarity],
       fluorescence: [minFluorescenceIntensity, maxFluorescenceIntensity],
@@ -343,7 +340,7 @@ const FilterListSection: FC<{
 
     setFilteredValue({
       price: modelFilteredValue?.price,
-      sliderPriceValue: [
+      rapnet_price: [
         modelFilteredValue?.price?.minPrice ||
           initialFilteredData?.price?.minPrice ||
           0,
@@ -351,40 +348,34 @@ const FilterListSection: FC<{
           initialFilteredData?.price?.maxPrice ||
           0,
       ],
-      carat: modelFilteredValue?.carat,
-      sliderCaratValue: [
-        modelFilteredValue?.carat?.minCarat ||
-          initialFilteredData?.carat?.minCarat ||
+      weight: [
+        modelFilteredValue?.weight?.minWeight ||
+          initialFilteredData?.weight?.minWeight ||
           0,
-        modelFilteredValue?.carat?.maxCarat ||
-          initialFilteredData?.carat?.maxCarat ||
+        modelFilteredValue?.weight?.maxWeight ||
+          initialFilteredData?.weight?.maxWeight ||
           0,
       ],
-      depth_percentage: modelFilteredValue?.depth_percentage,
-      sliderDepthValue: [
+      depth_percentage: [
         modelFilteredValue?.depth_percentage?.minDepth || 0,
         modelFilteredValue?.depth_percentage?.maxDepth || 0,
       ],
-      table_percentage: modelFilteredValue?.table_percentage,
-      sliderTableValue: [
-        modelFilteredValue?.table_percentage?.minTable || 0,
-        modelFilteredValue?.table_percentage?.maxTable || 0,
+      table_percentage: [
+        modelFilteredValue?.table_percentage?.minTable ||
+          initialFilteredData?.table_percentage?.minTable ||
+          0,
+        modelFilteredValue?.table_percentage?.minTable ||
+          initialFilteredData?.table_percentage?.minTable ||
+          0,
       ],
 
-      sliderColorValue: [minColor, maxColor],
-
-      sliderFancyColorValue: [minFancyColor, maxFancyColor],
-
-      sliderClarityValue: [minClarity, maxClarity],
-
-      sliderFluorescenceValue: [
-        minFluorescenceIntensity,
-        maxFluorescenceIntensity,
-      ],
-
-      sliderPolishValue: [minPolish, maxPolish],
-
-      sliderSymmetryValue: [minSymmetry, maxSymmetry],
+      color: [minColor, maxColor],
+      lab: [minLab, maxLab],
+      fancy_color: [minFancyColor, maxFancyColor],
+      clarity: [minClarity, maxClarity],
+      fluorescence: [minFluorescenceIntensity, maxFluorescenceIntensity],
+      polish: [minPolish, maxPolish],
+      symmetry: [minSymmetry, maxSymmetry],
     });
 
     setIsModelOpen(false);
@@ -396,6 +387,26 @@ const FilterListSection: FC<{
     () => _.isEqual(filteredDataBackUp, filteredData),
     [filteredData, filteredDataBackUp]
   );
+
+  const dynamicDiamondFilterData = Object.values(diamondFilterData);
+
+  const handleClickedCerti = (certificate: string) => {
+    setFilteredData({
+      ...filteredData,
+      certificate,
+    });
+  };
+
+  const minMaxAttributes = {
+    rapnet_price: ["Min Price", "Max Price"],
+    depth_percentage: ["Min Depth %", "Max Depth %"],
+    table_percentage: ["Min Table %", "Max Table %"],
+    weight: ["Min Weight", "Max Weight"],
+  } as const;
+
+  const isMinMaxAttribute = (
+    attr: string
+  ): attr is keyof typeof minMaxAttributes => attr in minMaxAttributes;
 
   return (
     <div className="py-6 xl:py-8 px-3" id="scroll-filter-section">
@@ -491,149 +502,135 @@ const FilterListSection: FC<{
         leaveTo="transform max-h-0"
       >
         <div className="py-6 hidden lg:block">
+          {/* /////////////////////////////////////////////// START */}
           <div className="flex flex-col gap-y-4 items-start w-full relative flex-[0_0_auto]">
-            <div className="grid grid-cols-2 gap-x-6">
-              <Shape
-                filteredData={filteredData}
-                setFilteredData={setFilteredData}
-              />
-              <div className="w-full inline-flex flex-col items-start gap-[16px] relative flex-[0_0_auto]">
-                <Price
-                  filteredData={filteredData}
-                  setFilteredData={setFilteredData}
-                  price={filteredValue?.price}
-                  sliderPriceValue={filteredValue?.sliderPriceValue || [0, 0]}
-                  setFilteredValue={setFilteredValue}
-                />
-                {Number(filteredData?.carat?.maxCarat) > 0 && Number(filteredData?.carat?.minCarat) >= 0 ? <Carat
-                  filteredData={filteredData}
-                  setFilteredData={setFilteredData}
-                  carat={filteredValue?.carat}
-                  sliderCaratValue={filteredValue?.sliderCaratValue || [0, 0]}
-                  setFilteredValue={setFilteredValue}
-                /> : null}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 w-full">
-              <div className="w-full flex flex-col items-start gap-2 p-4 relative bg-[var(--theme-filter-color)] rounded-lg">
-                <div className="inline-flex flex-col items-start gap-2 relative flex-[0_0_auto] mr-[-16.00px] w-full">
-                  {globalFilterData.colorType === MINED ? (
-                    <>
-                      <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
-                        <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                          {COLOR_TITLE}
-                        </div>
-                      </div>
-                      <div className="flex flex-col w-full h-8 items-start justify-end relative flex-[0_0_auto]">
-                        <Slider
-                          range
-                          min={0}
-                          max={
-                            diamondFilterData?.color?.options
-                              ? Object.keys(diamondFilterData?.color?.options)
-                                  .length - 1
-                              : 0
-                          }
-                          marks={FilterSliderData(
-                            diamondFilterData.color.options,
-                            "5.5%"
-                          )}
-                          step={null}
-                          onChangeComplete={(e) =>
-                            (e[0] !== filteredData.color?.[0] ||
-                              e[1] !== filteredData.color?.[1]) &&
-                            handleAfterChangeSlider(COLOR, e)
-                          }
-                          onChange={(e) => handleChangeSlider(SLIDER_COLOR, e)}
-                          defaultValue={filteredValue?.sliderColorValue}
-                          value={filteredValue?.sliderColorValue}
-                          allowCross={false}
-                          pushable
-                          ariaLabelForHandle={COLOR}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
-                        <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                          {FANCY_COLOR_TITLE}
-                        </div>
-                      </div>
-                      <div className="flex flex-col w-full h-8 items-start justify-end relative flex-[0_0_auto]">
-                        <Slider
-                          range
-                          min={0}
-                          max={
-                            diamondFilterData?.fancy_color?.options
-                              ? Object.keys(
-                                  diamondFilterData?.fancy_color?.options
-                                ).length - 1
-                              : 0
-                          }
-                          marks={FilterSliderData(
-                            diamondFilterData.fancy_color.options,
-                            "5.5%"
-                          )}
-                          step={null}
-                          onChangeComplete={(e) =>
-                            (e[0] !== filteredData?.fancy_color?.[0] ||
-                              e[1] !== filteredData?.fancy_color?.[1]) &&
-                            handleAfterChangeSlider(FANCY_COLOR, e)
-                          }
-                          onChange={(e) =>
-                            handleChangeSlider(SLIDER_FANCY_COLOR, e)
-                          }
-                          defaultValue={filteredValue?.sliderFancyColorValue}
-                          value={filteredValue?.sliderFancyColorValue}
-                          allowCross={false}
-                          pushable
-                          ariaLabelForHandle={FANCY_COLOR}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="w-full flex flex-col items-start gap-2 p-4 relative bg-[var(--theme-filter-color)] rounded-lg">
-                <div className="inline-flex flex-col items-start gap-2 relative flex-[0_0_auto] mr-[-16.00px] w-full">
-                  <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
-                    <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                      {CLARITY_TITLE}
-                    </div>
-                  </div>
-                  <div className="w-full flex flex-col h-8 items-start justify-end relative flex-[0_0_auto]">
-                    <Slider
-                      range
-                      min={0}
-                      max={
-                        diamondFilterData?.clarity?.options
-                          ? Object.keys(diamondFilterData?.clarity?.options)
-                              .length - 1
-                          : 0
-                      }
-                      marks={FilterSliderData(
-                        diamondFilterData.clarity.options,
-                        "3%"
-                      )}
-                      step={null}
-                      onChangeComplete={(e) =>
-                        (e[0] !== filteredData.clarity?.[0] ||
-                          e[1] !== filteredData.clarity?.[1]) &&
-                        handleAfterChangeSlider(CLARITY, e)
-                      }
-                      onChange={(e) => handleChangeSlider(SLIDER_CLARITY, e)}
-                      defaultValue={filteredValue?.sliderClarityValue}
-                      value={filteredValue?.sliderClarityValue}
-                      allowCross={false}
-                      pushable
-                      ariaLabelForHandle={CLARITY}
+            {/* Rest of the filters in grid layout */}
+            <div className="grid grid-cols-1 gap-x-6 w-full gap-y-6">
+              {[...dynamicDiamondFilterData]
+                .filter(
+                  (a) =>
+                    (a as { attribute_code: string }).attribute_code === "shape"
+                )
+                .map((item: any, index: number) => (
+                  <div key={index + item.label}>
+                    <Shape
+                      filteredData={filteredData}
+                      setFilteredData={setFilteredData}
+                      item={item}
                     />
                   </div>
-                </div>
-              </div>
+                ))}
+            </div>
+            <div className="grid grid-cols-2 gap-6 w-full gap-y-6">
+              {[...dynamicDiamondFilterData]
+                .filter(
+                  (item: any) =>
+                    item.attribute_code !== "shape" &&
+                    item.attribute_code !==
+                      (globalFilterData.colorType === "mined"
+                        ? "fancy_color"
+                        : "color")
+                )
+                .sort((a, b) =>
+                  (a as { attribute_code: string }).attribute_code ===
+                  "certificates"
+                    ? 1
+                    : (b as { attribute_code: string }).attribute_code ===
+                      "certificates"
+                    ? -1
+                    : 0
+                )
+                .map((item: any, index: number) => {
+                  const attr = item.attribute_code;
+
+                  return (
+                    <div
+                      key={index + item.label}
+                      className="inline-flex flex-col items-start gap-4 px-4 py-2 relative flex-[0_0_auto] bg-[var(--theme-filter-color)] rounded-lg w-full"
+                    >
+                      <div className="inline-flex flex-col items-start gap-4 relative w-full">
+                        <div className="w-full flex justify-between items-center">
+                          <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
+                            <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
+                              {item.label}
+                            </div>
+                          </div>
+
+                          {isMinMaxAttribute(attr) && (
+                            <MinMaxInput
+                              min={Number(item.min)}
+                              max={Number(item.max)}
+                              value={[
+                                filteredValue?.[attr]?.[0] ?? Number(item.min),
+                                filteredValue?.[attr]?.[1] ?? Number(item.max),
+                              ]}
+                              onChange={([min, max]) =>
+                                setFilteredValue((prev) => ({
+                                  ...prev,
+                                  [attr]: [min, max],
+                                }))
+                              }
+                              minLabel={minMaxAttributes[attr][0]}
+                              maxLabel={minMaxAttributes[attr][1]}
+                            />
+                          )}
+                        </div>
+
+                        <div className="w-full flex-col items-start justify-end relative">
+                          {item.range ? (
+                            <div className="relative h-[24px]">
+                              <Slider
+                                range
+                                min={Number(item.min)}
+                                max={
+                                  item.options?.length > 0
+                                    ? Object.keys(item.options).length - 1
+                                    : Number(item?.max)
+                                }
+                                marks={FilterSliderData(item.options, "3%")}
+                                step={0}
+                                onChangeComplete={(e) =>
+                                  (e[0] !== filteredData[attr]?.[0] ||
+                                    e[1] !== filteredData[attr]?.[1]) &&
+                                  handleAfterChangeSlider(attr, e)
+                                }
+                                onChange={(e) => handleChangeSlider(attr, e)}
+                                defaultValue={item.options}
+                                value={filteredValue?.[attr]}
+                                allowCross={false}
+                                pushable
+                                ariaLabelForHandle={attr}
+                              />
+                            </div>
+                          ) : attr === "certificates" ? (
+                            <div className="bg-[var(--theme-filter-color)] px-4 py-2 rounded-lg">
+                              <div className="flex flex-wrap items-start justify-between content-start gap-6 flex-[0_0_auto]">
+                                {item?.options?.map(
+                                  (option: any, i: number) => (
+                                    <div
+                                      key={i}
+                                      onClick={() =>
+                                        handleClickedCerti(option?.value)
+                                      }
+                                      className="cursor-pointer w-1/4 h-full py-3 flex justify-center bg-[var(--dark-theme-color)] rounded-lg border border-solid border-[var(--filter-border-color)]"
+                                    >
+                                      <div className="relative w-fit [font-family:'Poppins-Regular',Helvetica] font-normal text-[var(--theme-alter-color)] text-[16.1px] tracking-[0] leading-[normal]">
+                                        {option?.label}
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
+          {/* /////////////////////////////////////////////// END */}
           <div className="w-full flex items-center gap-6 p-4 relative flex-[0_0_auto] bg-[var(--theme-color)]">
             <div className="relative w-full h-[2px] bg-[var(--bg-blank)]" />
             <button
@@ -662,16 +659,13 @@ const FilterListSection: FC<{
             leaveTo="transform max-h-0"
           >
             <div>
-            <AdvancedFilteres
-              filteredData={filteredData}
-              setFilteredData={setFilteredData}
-              depth={filteredValue?.depth_percentage}
-              sliderDepthValue={filteredValue?.sliderDepthValue || [0, 0]}
-              table={filteredValue?.table_percentage}
-              sliderTableValue={filteredValue?.sliderTableValue || [0, 0]}
-              filteredValue={filteredValue}
-              setFilteredValue={setFilteredValue}
-            /></div>
+              <AdvancedFilteres
+                filteredData={filteredData}
+                setFilteredData={setFilteredData}
+                filteredValue={filteredValue}
+                setFilteredValue={setFilteredValue}
+              />
+            </div>
           </Transition>
         </div>
       </Transition>

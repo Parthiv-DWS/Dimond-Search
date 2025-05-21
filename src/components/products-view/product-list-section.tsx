@@ -349,7 +349,6 @@ const ProductListSection: FC<{
               color
               rapnet_price
               polish
-              size
               clarity
               depth_percentage
               table_percentage

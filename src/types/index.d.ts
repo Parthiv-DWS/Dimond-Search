@@ -4,6 +4,10 @@ export type FilterGlobalType = {
     minPrice?: number;
     maxPrice?: number;
   };
+  weight?: {
+    minWeight?: number;
+    maxWeight?: number;
+  };
   carat?: {
     minCarat?: number;
     maxCarat?: number;
@@ -24,6 +28,7 @@ export type FilterGlobalType = {
     maxTable?: number;
   };
   certificate?: string;
+  lab?: number[];
 };
 
 export type ObjectType = { [key: string]: string };
@@ -33,6 +38,10 @@ export type ModelFilteredValueType = {
   price?: {
     minPrice?: number;
     maxPrice?: number;
+  };
+  weight?: {
+    minWeight?: number;
+    maxWeight?: number;
   };
   carat?: {
     minCarat?: number;
@@ -47,6 +56,14 @@ export type ModelFilteredValueType = {
     maxTable?: number;
   };
   color?: {
+    min?: any;
+    max?: any;
+  };
+  lab?: {
+    min?: any;
+    max?: any;
+  };
+  cut?: {
     min?: any;
     max?: any;
   };
@@ -74,19 +91,21 @@ export type ModelFilteredValueType = {
 
 export type FilteredValueType = {
   price?: FilterGlobalType["price"];
-  sliderPriceValue?: number[];
+  weight?: number[];
+  rapnet_price?: number[];
   carat?: FilterGlobalType["carat"];
   sliderCaratValue?: number[];
-  depth_percentage?: FilterGlobalType["depth_percentage"];
-  sliderDepthValue?: number[];
-  table_percentage?: FilterGlobalType["table_percentage"];
+  depth_percentage?: number[];
+  table_percentage?: number[];
   sliderTableValue?: number[];
-  sliderColorValue?: number[];
-  sliderFancyColorValue?: number[];
-  sliderClarityValue?: number[];
-  sliderFluorescenceValue?: number[];
-  sliderPolishValue?: number[];
-  sliderSymmetryValue?: number[];
+  color?: number[];
+  lab?: number[];
+  fancy_color?: number[];
+  clarity?: number[];
+  fluorescence?: number[];
+  polish?: number[];
+  cut?: number[];
+  symmetry?: number[];
 };
 
 export type GlobalFilterType = {
