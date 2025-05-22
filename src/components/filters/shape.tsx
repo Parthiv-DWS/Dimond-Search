@@ -5,21 +5,21 @@ import { useModeStore } from "../../store/theme-mode/store";
 import ChevroUpIcon from "../../assets/custom-icons/ChevroUpIcon";
 
 const Shape: FC<{
-  filteredData: FilterGlobalType;
-  setFilteredData: React.Dispatch<React.SetStateAction<FilterGlobalType>>;
+  newFilteredValue: any;
+  setNewFilteredValue: React.Dispatch<React.SetStateAction<any>>;
   item?: any;
-}> = ({ filteredData, setFilteredData , item}) => {
+}> = ({ newFilteredValue, setNewFilteredValue, item }) => {
   const { isDarkMode } = useModeStore((state) => state);
   const [openShape, setOpenShape] = useState<boolean>(true);
 
   const handleClickedShape = (value: string) => {
-    if (filteredData?.shape?.some((item) => item === value)) {
-      setFilteredData((fd) => ({
+    if (newFilteredValue?.shape?.some((item) => item === value)) {
+      setNewFilteredValue((fd) => ({
         ...fd,
         shape: fd?.shape?.filter((item) => item !== value),
       }));
     } else {
-      setFilteredData((fd) => ({
+      setNewFilteredValue((fd) => ({
         ...fd,
         shape: [...(fd?.shape || []), value],
       }));
@@ -46,7 +46,7 @@ const Shape: FC<{
                   key={item?.value}
                   onClick={() => handleClickedShape(item?.value)}
                   className={`relative flex hover:bg-[var(--dark-theme-color)] flex-col justify-center items-center w-[113.6px] h-[75px] rounded-lg overflow-hidden ${
-                    filteredData?.shape?.some((shape) => shape === item?.value)
+                    newFilteredValue?.shape?.some((shape) => shape === item?.value)
                       ? "bg-[var(--dark-theme-color)]"
                       : "border border-solid border-[var(--filter-border-color)]"
                   }`}

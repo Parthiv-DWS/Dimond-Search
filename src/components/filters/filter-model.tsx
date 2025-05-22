@@ -158,8 +158,8 @@ const FilterModel: FC<{
                 .map((item: any, index: number) => (
                   <div key={index + item.label}>
                     <Shape
-                      filteredData={filteredData}
-                      setFilteredData={setFilteredData}
+                      newFilteredValue={filteredData}
+                      setNewFilteredValue={setFilteredData}
                       item={item}
                     />
                   </div>

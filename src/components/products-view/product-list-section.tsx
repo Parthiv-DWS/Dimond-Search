@@ -102,6 +102,8 @@ const ProductListSection: FC<{
   applyFilter: boolean;
   setApplyFilter: React.Dispatch<React.SetStateAction<boolean>>;
   globalFilterData: GlobalFilterType;
+  newFilteredValue: any;
+  newFilterData: any;
 }> = ({
   filteredData,
   setFilteredData,
@@ -109,6 +111,8 @@ const ProductListSection: FC<{
   applyFilter,
   setApplyFilter,
   globalFilterData,
+  newFilteredValue,
+  newFilterData,
 }) => {
   const { isDarkMode, diamondFilterData } = useModeStore((state) => state);
   const [products, setProducts] = useState<ObjectType[]>([]);
@@ -261,49 +265,6 @@ const ProductListSection: FC<{
       .map((clr) => clr.value);
 
     symmetry.length = symmetry.length - 1;
-    const cut = (
-      diamondFilterData?.cut_grade?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.cut_grade?.length) {
-          const min = filteredData?.cut_grade?.[0];
-          const max = filteredData?.cut_grade?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    cut.length = cut.length - 1;
-
-    const lab = (
-      diamondFilterData?.lab?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.lab?.length) {
-          const min = filteredData?.lab?.[0];
-          const max = filteredData?.lab?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    lab.length = lab.length - 1;
 
     return {
       color,
@@ -312,8 +273,6 @@ const ProductListSection: FC<{
       fluorescence,
       polish,
       symmetry,
-      cut,
-      lab,
     };
   };
 
@@ -325,68 +284,37 @@ const ProductListSection: FC<{
       isInfiniteScroll?: boolean;
     }) => {
       setLoading(true);
+      console.log("newFilteredValue :>> ", newFilteredValue);
 
-      const { color, fancyColor, clarity, polish, symmetry, cut, lab } =
-        getQueryOptions();
+      if (!newFilterData || !newFilteredValue) return "";
+
+      const filters: string[] = [];
+      const ranges: string[] = [];
+
+      Object.entries(newFilteredValue).forEach(([key, value]) => {
+        const meta = newFilterData.find((item) => item.attribute_code === key);
+        const hasOptions =
+          Array.isArray(meta?.options) && meta.options.length > 0;
+
+        // Skip if value is empty
+        if (!value || (Array.isArray(value) && value.length === 0)) return;
+
+        if (hasOptions) {
+          filters.push(
+            `{ field: "${key}", value: "${value}", operator: "in" }`
+          );
+        } else if (Array.isArray(value) && value.length === 2) {
+          const [from, to] = value;
+          ranges.push(`{ field: "${key}", from: "${from}", to: "${to}" }`);
+        }
+      });
+      // console.log('filters :>> ', filters);
+      // console.log('ranges :>> ', ranges);
       const query = `
         query {
           diamondSearch(
-            filters: [
-              ${
-                filteredData?.shape?.length
-                  ? `{ field: "${SHAPE}", value: "${filteredData?.shape}", operator: "in" }`
-                  : ``
-              }
-              ${
-                globalFilterData?.colorType === MINED
-                  ? `${
-                      color.length
-                        ? `{ field: "${COLOR}", value: "${color}", operator: "in" }`
-                        : ``
-                    }`
-                  : `${
-                      fancyColor.length
-                        ? `{ field: "${FANCY_COLOR}", value: "${fancyColor}", operator: "in" }`
-                        : ``
-                    }`
-              }
-              ${
-                filteredData?.clarity?.length
-                  ? `{ field: "${CLARITY}", value: "${clarity}", operator: "in" }`
-                  : ``
-              }            
-              ${
-                filteredData?.polish?.length
-                  ? `{ field: "${POLISH}", value: "${polish}", operator: "in" }`
-                  : ``
-              }              
-              ${
-                filteredData?.symmetry?.length
-                  ? `{ field: "${SYMMETRY}", value: "${symmetry}", operator: "in" }`
-                  : ``
-              }   
-              ${
-                filteredData?.lab?.length
-                  ? `{ field: "${LAB}", value: "${lab}", operator: "in" }`
-                  : ``
-              }    
-              ${
-                filteredData?.cut_grade?.length
-                  ? `{ field: "${CUT}", value: "${cut}", operator: "in" }`
-                  : ``
-              }   
-            ]
-            range: [
-              { field: "rapnet_price", from: "${
-                filteredData?.price?.minPrice
-              }", to: "${filteredData?.price?.maxPrice}" }
-              { field: "depth_percentage", from: "${
-                filteredData?.depth_percentage?.minDepth
-              }", to: "${filteredData?.depth_percentage?.maxDepth}" }
-                { field: "weight", from: "${
-                  filteredData?.weight?.minWeight
-                }", to: "${filteredData?.weight?.maxWeight}" }
-            ]
+            filters: [${filters.join(",")}]
+            range: [${ranges.join(",")}]
             pageSize: ${SHOW_ITEMS_PER_PAGE}
             currentPage: ${
               queryOptions?.currentPageNumber || INITIAL_CURRENT_PAGE
@@ -408,7 +336,6 @@ const ProductListSection: FC<{
               table_percentage
               symmetry
               measurements
-              lab
             }
           }
         }
@@ -455,7 +382,13 @@ const ProductListSection: FC<{
       // --------------------------------------- demo product end --------------------------------------------
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filteredData, diamondFilterData, selectedShortBy, isUp, globalFilterData]
+    [
+      newFilteredValue,
+      diamondFilterData,
+      selectedShortBy,
+      isUp,
+      globalFilterData,
+    ]
   );
 
   const handleClickMinShortByItem = (item: {
@@ -542,7 +475,7 @@ const ProductListSection: FC<{
       if (currentPage > 1) setCurrentPage(INITIAL_CURRENT_PAGE);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredData, globalFilterData]);
+  }, [newFilteredValue, globalFilterData]);
 
   return (
     <>

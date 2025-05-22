@@ -22,10 +22,12 @@ const Home: FC = () => {
   });
   const [filteredData, setFilteredData] =
     useState<FilterGlobalType>(initialFilteredData);
-  const [filteredDataBackUp, setFilteredDataBackUp] =
-    useState<FilterGlobalType>(initialFilteredData);
+  const [filteredDataBackUp, setFilteredDataBackUp] = useState<any>([]);
 
-  useEffect(() => {
+  const [newFilterData, setNewFilteredData] = useState<any>([]);
+   const [newFilteredValue, setNewFilteredValue] = useState<any>({});
+
+   useEffect(() => {
     const query = `
     query {
       diamondFilter {
@@ -48,6 +50,7 @@ const Home: FC = () => {
 
     fetchAPI(query)
       .then((data) => {
+        setNewFilteredData(data?.data?.diamondFilter);
         const formattedData: any = _.setWith(
           {},
           "data.diamondFilter",
@@ -67,7 +70,6 @@ const Home: FC = () => {
           FLUORESCENCE_INTENSITY
         ]?.options.push(newObj);
         setDiamondFilterData(formattedData?.data?.diamondFilter);
-
         const allData = getFilteredObjFromDiamondFilterData(
           formattedData?.data?.diamondFilter
         );
@@ -78,11 +80,7 @@ const Home: FC = () => {
             ...allData.data,
           }));
 
-          setFilteredDataBackUp((fd) => ({
-            ...fd,
-            ...allData.data,
-          }));
-
+          setFilteredDataBackUp(data?.data?.diamondFilter);
           setIsAvailData(true);
         }
       })
@@ -104,6 +102,9 @@ const Home: FC = () => {
             filteredDataBackUp={filteredDataBackUp}
             globalFilterData={globalFilterData}
             setGlobalFilterData={setGlobalFilterData}
+            newFilterData={newFilterData}
+            newFilteredValue={newFilteredValue}
+            setNewFilteredValue={setNewFilteredValue}
           />
           <ProductListSection
             filteredData={filteredData}
@@ -112,6 +113,8 @@ const Home: FC = () => {
             applyFilter={applyFilter}
             setApplyFilter={setApplyFilter}
             globalFilterData={globalFilterData}
+            newFilteredValue={newFilteredValue}
+            newFilterData={newFilterData}
           />
         </>
       )}

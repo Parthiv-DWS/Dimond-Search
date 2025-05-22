@@ -1,75 +1,40 @@
-import { FC, JSX } from "react";
+import React, { FC, JSX } from "react";
 import Slider from "rc-slider";
-import {
-  FilterGlobalType,
-  FilteredValueType,
-  GlobalFilterType,
-} from "../../../types";
+import { FilterGlobalType, GlobalFilterType } from "../../../types";
 import { FilterSliderData } from "../../../utility/utils";
-import { useModeStore } from "../../../store/theme-mode/store";
 import MinMaxInput from "../MinMaxInput";
 
 export const AdvancedFilteres: FC<{
-  filteredData: FilterGlobalType;
   setFilteredData: React.Dispatch<React.SetStateAction<FilterGlobalType>>;
-  filteredValue: FilteredValueType;
-  setFilteredValue: React.Dispatch<React.SetStateAction<FilteredValueType>>;
+  newFilteredValue: any;
+  setNewFilteredValue: React.Dispatch<React.SetStateAction<any>>;
   globalFilterData: GlobalFilterType;
+  minMaxAttributes: {
+    [key: string]: [string, string];
+  };
+  isMinMaxAttribute: (attr: string) => boolean;
+  handleClickedCerti: (value: string) => void;
+  handleChangeSlider: (key: string, e: number[] | number | undefined) => void;
+  handleAfterChangeSlider: (
+    key: string,
+    e: number[] | number | undefined
+  ) => void;
+  newFilterData: any;
 }> = ({
-  filteredData,
-  setFilteredData,
-  filteredValue,
-  setFilteredValue,
+  newFilteredValue,
+  setNewFilteredValue,
   globalFilterData,
+  minMaxAttributes,
+  isMinMaxAttribute,
+  handleClickedCerti,
+  handleChangeSlider,
+  handleAfterChangeSlider,
+  newFilterData,
 }): JSX.Element => {
-  const { diamondFilterData } = useModeStore((state) => state);
-  const dynamicDiamondFilterData = Object.values(diamondFilterData);
-  const handleAfterChangeSlider = (
-    key: string,
-    e: number[] | number | undefined
-  ) => {
-    setFilteredData({
-      ...filteredData,
-      [key]: e,
-    });
-  };
-
-  const handleChangeSlider = (
-    key: string,
-    e: number[] | number | undefined
-  ) => {
-    if (Array.isArray(e)) {
-      let [newMin, newMax] = e;
-      if (newMax < newMin) [newMin, newMax] = [newMax, newMin];
-      setFilteredValue((prev) => ({
-        ...prev,
-        [key]: [newMin, newMax],
-      }));
-    }
-  };
-
-  const handleClickedCerti = (certificate: string) => {
-    setFilteredData({
-      ...filteredData,
-      certificate,
-    });
-  };
-
-  const minMaxAttributes = {
-    rapnet_price: ["Min Price", "Max Price"],
-    depth_percentage: ["Min Depth %", "Max Depth %"],
-    table_percentage: ["Min Table %", "Max Table %"],
-    weight: ["Min Weight", "Max Weight"],
-  } as const;
-
-  const isMinMaxAttribute = (
-    attr: string
-  ): attr is keyof typeof minMaxAttributes => attr in minMaxAttributes;
-
   return (
     <div className="relative">
       <div className="grid grid-cols-2 gap-6 w-full gap-y-6">
-        {[...dynamicDiamondFilterData]
+        {[...newFilterData]
           .filter(
             (item: any) =>
               item.attribute_code !== "shape" &&
@@ -108,11 +73,11 @@ export const AdvancedFilteres: FC<{
                         min={Number(item.min)}
                         max={Number(item.max)}
                         value={[
-                          filteredValue?.[attr]?.[0] ?? Number(item.min),
-                          filteredValue?.[attr]?.[1] ?? Number(item.max),
+                          newFilteredValue?.[attr]?.[0] ?? Number(item.min),
+                          newFilteredValue?.[attr]?.[1] ?? Number(item.max),
                         ]}
                         onChange={([min, max]) =>
-                          setFilteredValue((prev) => ({
+                          setNewFilteredValue((prev) => ({
                             ...prev,
                             [attr]: [min, max],
                           }))
@@ -137,13 +102,13 @@ export const AdvancedFilteres: FC<{
                           marks={FilterSliderData(item.options, "3%")}
                           step={0}
                           onChangeComplete={(e) =>
-                            (e[0] !== filteredData[attr]?.[0] ||
-                              e[1] !== filteredData[attr]?.[1]) &&
+                            (e[0] !== newFilteredValue[attr]?.[0] ||
+                              e[1] !== newFilteredValue[attr]?.[1]) &&
                             handleAfterChangeSlider(attr, e)
                           }
                           onChange={(e) => handleChangeSlider(attr, e)}
                           defaultValue={item.options}
-                          value={filteredValue?.[attr]}
+                          value={newFilteredValue?.[attr]}
                           allowCross={false}
                           pushable
                           ariaLabelForHandle={attr}

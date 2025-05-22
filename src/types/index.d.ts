@@ -17,7 +17,7 @@ export type FilterGlobalType = {
   polish?: number[];
   symmetry?: number[];
   clarity?: number[];
-  cut_grade?: number[];
+  cut?: number[];
   depth_percentage?: {
     minDepth?: number;
     maxDepth?: number;
@@ -63,7 +63,7 @@ export type ModelFilteredValueType = {
     min?: any;
     max?: any;
   };
-  cut_grade?: {
+  cut?: {
     min?: any;
     max?: any;
   };
@@ -104,7 +104,7 @@ export type FilteredValueType = {
   clarity?: number[];
   fluorescence?: number[];
   polish?: number[];
-  cut_grade?: number[];
+  cut?: number[];
   symmetry?: number[];
 };
 
