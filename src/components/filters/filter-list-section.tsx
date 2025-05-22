@@ -94,7 +94,7 @@ const FilterListSection: FC<{
     ],
     color: filteredData?.color || initialFilteredData?.color,
     lab: filteredData?.lab || initialFilteredData?.lab,
-    cut: filteredData?.cut || initialFilteredData?.cut,
+    cut_grade: filteredData?.cut_grade || initialFilteredData?.cut_grade,
 
     fancy_color: filteredData?.fancy_color || initialFilteredData?.fancy_color,
 
@@ -122,27 +122,47 @@ const FilterListSection: FC<{
 
   const [modelFilteredValue, setModelFilteredValue] =
     useState<ModelFilteredValueType>(getFilterModelObj(filteredData));
-
   const [isAdvancedAllow, setIsAdvancedAllow] = useState<boolean>(false);
   const [isFilterHide, setIsFilterHide] = useState<boolean>(false);
 
   function getFilterModelObj(
     filterObj: FilterGlobalType
   ): ModelFilteredValueType {
-    const getMinMaxObj = (filterName: string) => ({
-      min:
-        data(filterName)?.find(
-          (index: number) =>
-            filterObj?.[filterName]?.[0] &&
-            index === filterObj?.[filterName]?.[0]
-        )?.value || data(filterName)?.[0]?.value,
-      max:
-        data(filterName)?.find(
-          (index: number) =>
-            filterObj?.[filterName]?.[1] &&
-            index === filterObj?.[filterName]?.[1] - 1
-        )?.value || data(filterName)[data(filterName)?.length - 2]?.value,
-    });
+    // const getMinMaxObj = (filterName: string) => ({
+    //   min:
+    //     data(filterName)?.find(
+    //       (index: number) =>
+    //         filterObj?.[filterName]?.[0] &&
+    //         index === filterObj?.[filterName]?.[0]
+    //     )?.value || data(filterName)?.[0]?.value,
+    //   max:
+    //     data(filterName)?.find(
+    //       (index: number) =>
+    //         filterObj?.[filterName]?.[1] &&
+    //         index === filterObj?.[filterName]?.[1] - 1
+    //     )?.value || data(filterName)[data(filterName)?.length - 2]?.value,
+    // });
+
+    const getMinMaxObj = (filterName: string) => {
+      const filterData = data(filterName) || [];
+      const filterValues = filterObj?.[filterName];
+
+      const minIndex = filterValues?.[0];
+      const maxIndex = filterValues?.[1];
+
+      const minValue =
+        filterData.find((_, i) => i === minIndex)?.value ??
+        filterData[0]?.value;
+
+      const maxValue =
+        filterData.find((_, i) => i === maxIndex - 1)?.value ??
+        filterData[filterData.length - 2]?.value;
+
+      return {
+        min: minValue,
+        max: maxValue,
+      };
+    };
 
     return {
       shape: filterObj?.shape || initialFilteredData?.shape,
@@ -155,7 +175,7 @@ const FilterListSection: FC<{
 
       color: getMinMaxObj(COLOR),
       lab: getMinMaxObj(LAB),
-      cut: getMinMaxObj(CUT),
+      cut_grade: getMinMaxObj(CUT),
       fancy_color: getMinMaxObj(FANCY_COLOR),
       clarity: getMinMaxObj(CLARITY),
       fluorescence: getMinMaxObj(FLUORESCENCE_INTENSITY),
@@ -220,7 +240,7 @@ const FilterListSection: FC<{
         ],
 
         color: filteredDataBackUp?.color || initialFilteredData?.color,
-        cut: filteredDataBackUp?.cut || initialFilteredData?.cut,
+        cut_grade: filteredDataBackUp?.cut_grade || initialFilteredData?.cut_grade,
         lab: filteredDataBackUp?.lab || initialFilteredData?.lab,
 
         fancy_color:
@@ -525,7 +545,8 @@ const FilterListSection: FC<{
               {[...dynamicDiamondFilterData]
                 .filter(
                   (item: any) =>
-                    item.attribute_code !== "shape" && !item.isAdvance &&
+                    item.attribute_code !== "shape" &&
+                    !item.isAdvance &&
                     item.attribute_code !==
                       (globalFilterData.colorType === "mined"
                         ? "fancy_color"

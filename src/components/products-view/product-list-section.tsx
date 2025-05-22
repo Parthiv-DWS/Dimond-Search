@@ -19,7 +19,9 @@ import {
   CLARITY,
   COLOR,
   COLOR_TITLE,
+  CUT,
   FANCY_COLOR,
+  LAB,
   MINED,
   POLISH,
   POLISH_TITLE,
@@ -123,9 +125,7 @@ const ProductListSection: FC<{
   const [showProductsPerPage, setShowProductsPerPage] = useState<ObjectType[]>(
     []
   );
-  const [totalProducts, setTotalProducts] = useState<ObjectType[]>(
-    []
-  );
+  const [totalProducts, setTotalProducts] = useState<ObjectType[]>([]);
   const [currentPage, setCurrentPage] = useState(INITIAL_CURRENT_PAGE);
   const pageRef = useRef(1);
 
@@ -261,6 +261,49 @@ const ProductListSection: FC<{
       .map((clr) => clr.value);
 
     symmetry.length = symmetry.length - 1;
+    const cut = (
+      diamondFilterData?.cut_grade?.options as Array<{
+        label: string;
+        value: string;
+      }>
+    )
+      .filter((_, index) => {
+        if (filteredData?.cut_grade?.length) {
+          const min = filteredData?.cut_grade?.[0];
+          const max = filteredData?.cut_grade?.[1];
+
+          if (index >= min && index <= max) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      })
+      .map((clr) => clr.value);
+
+    cut.length = cut.length - 1;
+
+    const lab = (
+      diamondFilterData?.lab?.options as Array<{
+        label: string;
+        value: string;
+      }>
+    )
+      .filter((_, index) => {
+        if (filteredData?.lab?.length) {
+          const min = filteredData?.lab?.[0];
+          const max = filteredData?.lab?.[1];
+
+          if (index >= min && index <= max) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      })
+      .map((clr) => clr.value);
+
+    lab.length = lab.length - 1;
 
     return {
       color,
@@ -269,6 +312,8 @@ const ProductListSection: FC<{
       fluorescence,
       polish,
       symmetry,
+      cut,
+      lab,
     };
   };
 
@@ -281,9 +326,8 @@ const ProductListSection: FC<{
     }) => {
       setLoading(true);
 
-      const { color, fancyColor, clarity, polish, symmetry } =
+      const { color, fancyColor, clarity, polish, symmetry, cut, lab } =
         getQueryOptions();
-
       const query = `
         query {
           diamondSearch(
@@ -320,18 +364,28 @@ const ProductListSection: FC<{
                 filteredData?.symmetry?.length
                   ? `{ field: "${SYMMETRY}", value: "${symmetry}", operator: "in" }`
                   : ``
-              }              
+              }   
+              ${
+                filteredData?.lab?.length
+                  ? `{ field: "${LAB}", value: "${lab}", operator: "in" }`
+                  : ``
+              }    
+              ${
+                filteredData?.cut_grade?.length
+                  ? `{ field: "${CUT}", value: "${cut}", operator: "in" }`
+                  : ``
+              }   
             ]
             range: [
               { field: "rapnet_price", from: "${
                 filteredData?.price?.minPrice
               }", to: "${filteredData?.price?.maxPrice}" }
-              { field: "size", from: "${filteredData?.carat?.minCarat}", to: "${
-        filteredData?.carat?.maxCarat
-      }" }
               { field: "depth_percentage", from: "${
                 filteredData?.depth_percentage?.minDepth
               }", to: "${filteredData?.depth_percentage?.maxDepth}" }
+                { field: "weight", from: "${
+                  filteredData?.weight?.minWeight
+                }", to: "${filteredData?.weight?.maxWeight}" }
             ]
             pageSize: ${SHOW_ITEMS_PER_PAGE}
             currentPage: ${
@@ -360,15 +414,18 @@ const ProductListSection: FC<{
         }
     `;
 
-      // console.log("__ query", query);
+      // console.log("__ query}}}}==", query);
 
       fetchAPI(query)
         .then((res) => {
           if (res?.data?.diamondSearch?.items) {
             setTotalProductsCount(res?.data?.diamondSearch?.total_count);
             setProducts(res?.data?.diamondSearch?.items);
-            if(queryOptions?.isInfiniteScroll) {
-              setTotalProducts(prev => [...prev, ...res?.data?.diamondSearch?.items]);
+            if (queryOptions?.isInfiniteScroll) {
+              setTotalProducts((prev) => [
+                ...prev,
+                ...res?.data?.diamondSearch?.items,
+              ]);
             } else {
               setTotalProducts(res?.data?.diamondSearch?.items);
             }
@@ -444,7 +501,7 @@ const ProductListSection: FC<{
       (product) => product?.diamond_search_id === id
     );
     setSelectedDiamond(selectedProduct[0]);
-  }
+  };
 
   const fetchNextPage = () => {
     const nextPage = pageRef.current + 1;
@@ -489,201 +546,229 @@ const ProductListSection: FC<{
 
   return (
     <>
-    <div className="py-4 md:py-8 flex flex-col px-3 gap-y-6">
-      <div className="flex flex-col gap-y-6">
-        <div className="flex flex-col sm:flex-row gap-x-6 lg:gap-x-[60px] justify-center xl:justify-between gap-y-6">
-          <div className="w-full lg:w-1/2 xl:w-full flex gap-x-6">
-            <div className="relative w-full xl:w-full">
-              <input
-                type="text"
-                className="h-full pl-12 pr-4 p-4 w-full xl:w-full bg-[var(--theme-search-color)] rounded-lg focus:outline-none font-paregraph-p3-regular font-[number:var(--paregraph-p3-regular-font-weight)] text-grayscale-700 text-[length:var(--paregraph-p3-regular-font-size)] tracking-[var(--paregraph-p3-regular-letter-spacing)] leading-[var(--paregraph-p3-regular-line-height)] [font-style:var(--paregraph-p3-regular-font-style)]"
-                placeholder="Search Diamonds"
-              />
-              <div className="absolute inset-y-0 left-0 pl-4  flex items-center pointer-events-none">
-                <SearchIcon isDarkMode={isDarkMode} />
-              </div>
-            </div>
-            <div className="hidden xl:flex items-center justify-center py-4 px-6">
-              <CompareItemCount />
-            </div>
-          </div>
-          <div className="lg:w-1/2 w-full inline-flex items-center justify-between gap-2 md:gap-6 p-2 relative bg-[var(--theme-filter-color)] rounded-lg">
-            <div className="items-center gap-2 inline-flex relative flex-[0_0_auto]">
-              <div className="items-center justify-center gap-2 p-2 rounded-lg inline-flex relative flex-[0_0_auto]">
-                <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                  Short by
+      <div className="py-4 md:py-8 flex flex-col px-3 gap-y-6">
+        <div className="flex flex-col gap-y-6">
+          <div className="flex flex-col sm:flex-row gap-x-6 lg:gap-x-[60px] justify-center xl:justify-between gap-y-6">
+            <div className="w-full lg:w-1/2 xl:w-full flex gap-x-6">
+              <div className="relative w-full xl:w-full">
+                <input
+                  type="text"
+                  className="h-full pl-12 pr-4 p-4 w-full xl:w-full bg-[var(--theme-search-color)] rounded-lg focus:outline-none font-paregraph-p3-regular font-[number:var(--paregraph-p3-regular-font-weight)] text-grayscale-700 text-[length:var(--paregraph-p3-regular-font-size)] tracking-[var(--paregraph-p3-regular-letter-spacing)] leading-[var(--paregraph-p3-regular-line-height)] [font-style:var(--paregraph-p3-regular-font-style)]"
+                  placeholder="Search Diamonds"
+                />
+                <div className="absolute inset-y-0 left-0 pl-4  flex items-center pointer-events-none">
+                  <SearchIcon isDarkMode={isDarkMode} />
                 </div>
               </div>
-              <div className="w-[154px] bg-[var(--dark-theme-color)] rounded-[8px] relative">
-                <Dropdown
-                  value={selectedShortBy.value}
-                  dataList={shortByList}
-                  handleClickItem={handleClickMinShortByItem}
-                />
+              <div className="hidden xl:flex items-center justify-center py-4 px-6">
+                <CompareItemCount />
               </div>
             </div>
-            <button
-              className="items-start gap-[8px] p-[8px] inline-flex relative flex-[0_0_auto]"
-              onClick={handleClickOrder}
-              aria-label="arrow-up-down-butto"
-            >
-              <ArrowDownUp isUp={isUp} isDarkMode={isDarkMode} />
-            </button>
+            <div className="lg:w-1/2 w-full inline-flex items-center justify-between gap-2 md:gap-6 p-2 relative bg-[var(--theme-filter-color)] rounded-lg">
+              <div className="items-center gap-2 inline-flex relative flex-[0_0_auto]">
+                <div className="items-center justify-center gap-2 p-2 rounded-lg inline-flex relative flex-[0_0_auto]">
+                  <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
+                    Short by
+                  </div>
+                </div>
+                <div className="w-[154px] bg-[var(--dark-theme-color)] rounded-[8px] relative">
+                  <Dropdown
+                    value={selectedShortBy.value}
+                    dataList={shortByList}
+                    handleClickItem={handleClickMinShortByItem}
+                  />
+                </div>
+              </div>
+              <button
+                className="items-start gap-[8px] p-[8px] inline-flex relative flex-[0_0_auto]"
+                onClick={handleClickOrder}
+                aria-label="arrow-up-down-butto"
+              >
+                <ArrowDownUp isUp={isUp} isDarkMode={isDarkMode} />
+              </button>
+            </div>
+            <div className="hidden xl:flex gap-x-2">
+              <ProductViewIcons
+                setProductListView={setProductListView}
+                productListView={productListView}
+                isDarkMode={isDarkMode}
+              />
+            </div>
           </div>
-          <div className="hidden xl:flex gap-x-2">
+          <div className="flex items-center xl:hidden gap-x-2">
             <ProductViewIcons
               setProductListView={setProductListView}
               productListView={productListView}
               isDarkMode={isDarkMode}
             />
+            <div className="items-center justify-center py-4 px-6">
+              <CompareItemCount />
+            </div>
           </div>
         </div>
-        <div className="flex items-center xl:hidden gap-x-2">
-          <ProductViewIcons
-            setProductListView={setProductListView}
-            productListView={productListView}
-            isDarkMode={isDarkMode}
-          />
-          <div className="items-center justify-center py-4 px-6">
-            <CompareItemCount />
-          </div>
-        </div>
-      </div>
-      {isPagination && <div className="relative font-paregraph-p2-medium font-[number:var(--paregraph-p2-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p2-medium-font-size)] tracking-[var(--paregraph-p2-medium-letter-spacing)] leading-[var(--paregraph-p2-medium-line-height)] [font-style:var(--paregraph-p2-medium-font-style)]">
-        {productListView === "grid" ? (
-          <>
-            {showProductsPerPage?.length !== 0 && (
-              <div className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-3 gap-4">
-                {showProductsPerPage?.map((product: ObjectType, i) => {
-                  return (
-                    <div key={`${product.diamond_search_id}-${i}`} className="relative">
-                      <div className="cursor-pointer">
-                        <img
-                          src={DiamondImage}
-                          alt={product?.shape}
-                          className="object-cover flex-shrink-0 w-full h-[164px] sm:h-[168px] xl:h-[456px]"
-                          onClick={() => handleSelectedDiamond(product.diamond_search_id)}
-                        />
-                        {/* <iframe
+        {isPagination && (
+          <div className="relative font-paregraph-p2-medium font-[number:var(--paregraph-p2-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p2-medium-font-size)] tracking-[var(--paregraph-p2-medium-letter-spacing)] leading-[var(--paregraph-p2-medium-line-height)] [font-style:var(--paregraph-p2-medium-font-style)]">
+            {productListView === "grid" ? (
+              <>
+                {showProductsPerPage?.length !== 0 && (
+                  <div className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-3 gap-4">
+                    {showProductsPerPage?.map((product: ObjectType, i) => {
+                      return (
+                        <div
+                          key={`${product.diamond_search_id}-${i}`}
+                          className="relative"
+                        >
+                          <div className="cursor-pointer">
+                            <img
+                              src={DiamondImage}
+                              alt={product?.shape}
+                              className="object-cover flex-shrink-0 w-full h-[164px] sm:h-[168px] xl:h-[456px]"
+                              onClick={() =>
+                                handleSelectedDiamond(product.diamond_search_id)
+                              }
+                            />
+                            {/* <iframe
                           width="100%"
                           title="diamond"
                           style={{ borderStyle: "none" }}
                           className="object-cover flex-shrink-0 w-full h-[164px] sm:h-[168px] lg:h-[456px]"
                           src="https://cdn.pannellum.org/2.5/pannellum.htm#panorama=https%3A//pannellum.org/images/alma.jpg&autoLoad=true"
                         ></iframe> */}
-                        <button
-                          className={`absolute top-0 right-0 m-2 xl:m-4 inline-flex items-start gap-2 p-2 bg-[var(--theme-search-color)] rounded-[50px] cursor-pointer`}
-                          aria-label="heart-button"
-                          onClick={() => handleClickedHeart(String(i))}
-                        >
-                          <HeartIcon
-                            isDarkMode={isDarkMode}
-                            isLiked={
-                              !isDarkMode
-                                ? isLikedProduct(String(i)) === i
-                                : isLikedProduct(String(i)) !== i
-                            }
-                          />
-                        </button>
-                      </div>
-                      <div className="p-4">
-                        <div className="w-full flex justify-between">
-                          <span
-                            onClick={() => handleSelectedDiamond(product.diamond_search_id)}
-                            className="text-lg cursor-pointer font-paregraph-p2-medium font-[number:var(--paregraph-p2-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p2-medium-font-size)] tracking-[var(--paregraph-p2-medium-letter-spacing)] leading-[var(--paregraph-p2-medium-line-height)] [font-style:var(--paregraph-p2-medium-font-style)]"
-                          >
-                            {`${product?.shape} ${[
-                              product?.size ? `${product?.size} carat` : "",
-                              product?.color,
-                              product?.clarity,
-                            ].filter(Boolean)}`}
-                          </span>
-                          <input
-                            type="checkbox"
-                            name="Vector"
-                            aria-label="vector"
-                            className="h-[18px] w-[18px] flex-shrink-0 "
-                          />
+                            <button
+                              className={`absolute top-0 right-0 m-2 xl:m-4 inline-flex items-start gap-2 p-2 bg-[var(--theme-search-color)] rounded-[50px] cursor-pointer`}
+                              aria-label="heart-button"
+                              onClick={() => handleClickedHeart(String(i))}
+                            >
+                              <HeartIcon
+                                isDarkMode={isDarkMode}
+                                isLiked={
+                                  !isDarkMode
+                                    ? isLikedProduct(String(i)) === i
+                                    : isLikedProduct(String(i)) !== i
+                                }
+                              />
+                            </button>
+                          </div>
+                          <div className="p-4">
+                            <div className="w-full flex justify-between">
+                              <span
+                                onClick={() =>
+                                  handleSelectedDiamond(
+                                    product.diamond_search_id
+                                  )
+                                }
+                                className="text-lg cursor-pointer font-paregraph-p2-medium font-[number:var(--paregraph-p2-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p2-medium-font-size)] tracking-[var(--paregraph-p2-medium-letter-spacing)] leading-[var(--paregraph-p2-medium-line-height)] [font-style:var(--paregraph-p2-medium-font-style)]"
+                              >
+                                {`${product?.shape} ${[
+                                  product?.size ? `${product?.size} carat` : "",
+                                  product?.color,
+                                  product?.clarity,
+                                ].filter(Boolean)}`}
+                              </span>
+                              <input
+                                type="checkbox"
+                                name="Vector"
+                                aria-label="vector"
+                                className="h-[18px] w-[18px] flex-shrink-0 "
+                              />
+                            </div>
+                            <p
+                              onClick={() =>
+                                handleSelectedDiamond(product.diamond_search_id)
+                              }
+                              className="pt-2 cursor-pointer font-paregraph-p2-semibold font-[number:var(--paregraph-p2-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-semibold-font-size)] md:text-[length:var(--paregraph-p2-semibold-font-size)] tracking-[var(--paregraph-p2-semibold-letter-spacing)] leading-[var(--paregraph-p2-semibold-line-height)] [font-style:var(--paregraph-p2-semibold-font-style)]"
+                            >
+                              ${product.rapnet_price}
+                            </p>
+                          </div>
                         </div>
-                        <p
-                          onClick={() => handleSelectedDiamond(product.diamond_search_id)}
-                          className="pt-2 cursor-pointer font-paregraph-p2-semibold font-[number:var(--paregraph-p2-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-semibold-font-size)] md:text-[length:var(--paregraph-p2-semibold-font-size)] tracking-[var(--paregraph-p2-semibold-letter-spacing)] leading-[var(--paregraph-p2-semibold-line-height)] [font-style:var(--paregraph-p2-semibold-font-style)]"
-                        >
-                          ${product.rapnet_price}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <ProductListTable
+                  filteredProducts={showProductsPerPage}
+                  handleSelectedDiamond={handleSelectedDiamond}
+                />
+              </>
+            )}
+            {filteredProducts?.length === 0 && (
+              <div className="flex justify-center text-center mt-4 w-full ">
+                <img src={NoDataFoundImage} alt="no data found" />
               </div>
             )}
-          </>
-        ) : (
-          <>
-            <ProductListTable
-              filteredProducts={showProductsPerPage}
-              handleSelectedDiamond={handleSelectedDiamond}
+            {loading && (
+              <div className="absolute top-0 flex justify-center text-center w-full h-full items-center bg-[var(--theme-color)]">
+                <div className="loader"></div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex flex-col gap-y-6 sm:flex-row justify-start sm:justify-between">
+          <div>
+            <button className="flex items-center justify-center bg-[var(--theme-alter-color)] py-4 px-6 rounded-lg [font-family:var(--paregraph-p3-semibold-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-color)] text-[length:var(--paregraph-p3-semibold-font-size)] tracking-[var(--paregraph-p3-semibold-letter-spacing)] leading-[var(--paregraph-p3-semibold-line-height)] [font-style:var(--paregraph-p3-semibold-font-style)]">
+              Compare Items
+            </button>
+          </div>
+          {isPagination && (
+            <Pagination
+              dataList={filteredProducts}
+              totalItems={totalProductsCount}
+              itemsPerPage={SHOW_ITEMS_PER_PAGE}
+              currentPage={currentPage}
+              setShowProductsPerPage={setShowProductsPerPage}
+              setCurrentPage={setCurrentPage}
+              GetProductsList={GetProductsList}
             />
-          </>
-        )}
-        {filteredProducts?.length === 0 && (
-          <div className="flex justify-center text-center mt-4 w-full ">
-            <img src={NoDataFoundImage} alt="no data found" />
-          </div>
-        )}
-        {loading && (
-          <div className="absolute top-0 flex justify-center text-center w-full h-full items-center bg-[var(--theme-color)]">
-            <div className="loader"></div>
-          </div>
-        )}
-      </div>}
-      <div className="flex flex-col gap-y-6 sm:flex-row justify-start sm:justify-between">
-        <div>
-          <button className="flex items-center justify-center bg-[var(--theme-alter-color)] py-4 px-6 rounded-lg [font-family:var(--paregraph-p3-semibold-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-color)] text-[length:var(--paregraph-p3-semibold-font-size)] tracking-[var(--paregraph-p3-semibold-letter-spacing)] leading-[var(--paregraph-p3-semibold-line-height)] [font-style:var(--paregraph-p3-semibold-font-style)]">
-            Compare Items
-          </button>
+          )}
         </div>
-        {isPagination && <Pagination
-          dataList={filteredProducts}
-          totalItems={totalProductsCount}
-          itemsPerPage={SHOW_ITEMS_PER_PAGE}
-          currentPage={currentPage}
-          setShowProductsPerPage={setShowProductsPerPage}
-          setCurrentPage={setCurrentPage}
-          GetProductsList={GetProductsList}
-        />}
+        {open && (
+          <ModalOverlay
+            setOpen={setOpen}
+            open={open}
+            setFilteredData={setFilteredData}
+            setSelectedDiamond={setSelectedDiamond}
+          >
+            <ProductDetailsModel
+              setOpen={setOpen}
+              selectedDiamond={selectedDiamond}
+              setSelectedDiamond={setSelectedDiamond}
+            />
+          </ModalOverlay>
+        )}
       </div>
-      {open && (
-        <ModalOverlay
-          setOpen={setOpen}
-          open={open}
-          setFilteredData={setFilteredData}
-          setSelectedDiamond={setSelectedDiamond}
-        >
-          <ProductDetailsModel setOpen={setOpen} selectedDiamond={selectedDiamond} setSelectedDiamond={setSelectedDiamond} />
-        </ModalOverlay>
-      )}
-    </div>
-      {!isPagination && <InfiniteScroll
+      {!isPagination && (
+        <InfiniteScroll
           dataLength={totalProducts?.length}
           next={fetchNextPage}
           hasMore={totalProducts?.length < totalProductsCount}
-          loader={<div className="top-0 flex justify-center text-center w-full h-full items-center bg-[var(--theme-color)]">
-            <div className="loader"></div>
-          </div>}
+          loader={
+            <div className="top-0 flex justify-center text-center w-full h-full items-center bg-[var(--theme-color)]">
+              <div className="loader"></div>
+            </div>
+          }
           style={{ overflow: "hidden" }}
         >
-          {productListView === "grid" ? totalProducts?.length !== 0 && (
+          {productListView === "grid" ? (
+            totalProducts?.length !== 0 && (
               <div className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-3 gap-4">
                 {totalProducts?.map((product: ObjectType, i) => {
                   return (
-                    <div key={`${product.diamond_search_id}-${i}`} className="relative">
+                    <div
+                      key={`${product.diamond_search_id}-${i}`}
+                      className="relative"
+                    >
                       <div className="cursor-pointer">
                         <img
                           src={DiamondImage}
                           alt={product?.shape}
                           className="object-cover flex-shrink-0 w-full h-[164px] sm:h-[168px] xl:h-[456px]"
-                          onClick={() => handleSelectedDiamond(product.diamond_search_id)}
+                          onClick={() =>
+                            handleSelectedDiamond(product.diamond_search_id)
+                          }
                         />
                         {/* <iframe
                           width="100%"
@@ -710,7 +795,9 @@ const ProductListSection: FC<{
                       <div className="p-4">
                         <div className="w-full flex justify-between">
                           <span
-                            onClick={() => handleSelectedDiamond(product.diamond_search_id)}
+                            onClick={() =>
+                              handleSelectedDiamond(product.diamond_search_id)
+                            }
                             className="text-lg cursor-pointer font-paregraph-p2-medium font-[number:var(--paregraph-p2-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p2-medium-font-size)] tracking-[var(--paregraph-p2-medium-letter-spacing)] leading-[var(--paregraph-p2-medium-line-height)] [font-style:var(--paregraph-p2-medium-font-style)]"
                           >
                             {`${product?.shape} ${[
@@ -727,7 +814,9 @@ const ProductListSection: FC<{
                           />
                         </div>
                         <p
-                          onClick={() => handleSelectedDiamond(product.diamond_search_id)}
+                          onClick={() =>
+                            handleSelectedDiamond(product.diamond_search_id)
+                          }
                           className="pt-2 cursor-pointer font-paregraph-p2-semibold font-[number:var(--paregraph-p2-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-semibold-font-size)] md:text-[length:var(--paregraph-p2-semibold-font-size)] tracking-[var(--paregraph-p2-semibold-letter-spacing)] leading-[var(--paregraph-p2-semibold-line-height)] [font-style:var(--paregraph-p2-semibold-font-style)]"
                         >
                           ${product.rapnet_price}
@@ -737,17 +826,21 @@ const ProductListSection: FC<{
                   );
                 })}
               </div>
-            ) : <ProductListTable
+            )
+          ) : (
+            <ProductListTable
               filteredProducts={totalProducts}
               handleSelectedDiamond={handleSelectedDiamond}
-            />}
-      </InfiniteScroll>}
+            />
+          )}
+        </InfiniteScroll>
+      )}
       {totalProducts?.length === 0 && (
-          <div className="flex justify-center text-center mt-4 w-full ">
-            <img src={NoDataFoundImage} alt="no data found" />
-          </div>
-        )}
-      </>
+        <div className="flex justify-center text-center mt-4 w-full ">
+          <img src={NoDataFoundImage} alt="no data found" />
+        </div>
+      )}
+    </>
   );
 };
 

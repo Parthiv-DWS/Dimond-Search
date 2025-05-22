@@ -351,7 +351,7 @@ export const getFilters = () => {
         8: "",
       },
     },
-    cut: {
+    cut_grade: {
       min: 0,
       max: 5,
       data: {
@@ -512,7 +512,7 @@ export const getInitialFilteredData = (): FilterGlobalType => {
     fancy_color: [allFilters?.fancy_color?.min, allFilters?.fancy_color?.max],
     polish: [0, 0],
     clarity: [allFilters?.clarity?.min, allFilters?.clarity?.max],
-    cut: [allFilters?.cut?.min, allFilters?.cut?.max],
+    cut_grade: [allFilters?.cut_grade?.min, allFilters?.cut_grade?.max],
     depth_percentage: {
       minDepth: 0,
       maxDepth: 100,
