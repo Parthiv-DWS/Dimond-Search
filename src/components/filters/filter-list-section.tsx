@@ -331,7 +331,7 @@ const FilterListSection: FC<{
   const handleClickedCerti = (certificate: string) => {
     setNewFilteredValue((prev: any) => ({
       ...prev,
-      certificate,
+      certificates: certificate,
     }));
   };
 

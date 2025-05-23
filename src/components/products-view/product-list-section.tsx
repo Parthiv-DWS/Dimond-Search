@@ -457,7 +457,7 @@ const ProductListSection: FC<{
                               }
                               className="pt-2 cursor-pointer font-paregraph-p2-semibold font-[number:var(--paregraph-p2-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-semibold-font-size)] md:text-[length:var(--paregraph-p2-semibold-font-size)] tracking-[var(--paregraph-p2-semibold-letter-spacing)] leading-[var(--paregraph-p2-semibold-line-height)] [font-style:var(--paregraph-p2-semibold-font-style)]"
                             >
-                              ${product.rapnet_price}
+                              {product.rapnet_price}
                             </p>
                           </div>
                         </div>
@@ -598,7 +598,7 @@ const ProductListSection: FC<{
                           }
                           className="pt-2 cursor-pointer font-paregraph-p2-semibold font-[number:var(--paregraph-p2-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-semibold-font-size)] md:text-[length:var(--paregraph-p2-semibold-font-size)] tracking-[var(--paregraph-p2-semibold-letter-spacing)] leading-[var(--paregraph-p2-semibold-line-height)] [font-style:var(--paregraph-p2-semibold-font-style)]"
                         >
-                          ${product.rapnet_price}
+                          {product.rapnet_price}
                         </p>
                       </div>
                     </div>
