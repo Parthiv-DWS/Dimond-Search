@@ -16,8 +16,6 @@ const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamo
   const [selectedImage, setSelectedImage] = useState(MainRectangleImage);
   const handleClick = async (action: string) => {
     const isDev = import.meta.env.VITE_APP_TYPE === "development";
-    console.log("action", action);
-    console.log("isDev", isDev);
       if (isDev) {
         window.diamondSearch = window?.diamondSearch || {};
         window.diamondSearch.urls = window?.diamondSearch.urls || {};

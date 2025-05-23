@@ -37,6 +37,7 @@ const Home: FC = () => {
           range
           min
           max
+          tooltip
           isAdvance
           options {
               label

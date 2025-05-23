@@ -16,20 +16,14 @@ import ProductDetailsModel from "./product-details-model";
 import Dropdown from "../dropdown";
 import { fetchAPI } from "../../services/fetchAPI";
 import {
-  CLARITY,
   COLOR,
   COLOR_TITLE,
-  CUT,
-  FANCY_COLOR,
-  LAB,
-  MINED,
   POLISH,
   POLISH_TITLE,
   PRICE_TITLE,
   RAPNET_PRICE,
   SHAPE,
   SHAPE_TITLE,
-  SYMMETRY,
 } from "../../constants";
 
 export const CompareItemCount = () => (
@@ -133,149 +127,6 @@ const ProductListSection: FC<{
   const [currentPage, setCurrentPage] = useState(INITIAL_CURRENT_PAGE);
   const pageRef = useRef(1);
 
-  const getQueryOptions = () => {
-    const color = (
-      diamondFilterData?.color?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.color?.length) {
-          const min = filteredData?.color?.[0];
-          const max = filteredData?.color?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    color.length = color.length - 1;
-
-    const fancyColor = (
-      diamondFilterData?.fancy_color?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.fancy_color?.length) {
-          const min = filteredData?.fancy_color?.[0];
-          const max = filteredData?.fancy_color?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    fancyColor.length = fancyColor.length - 1;
-
-    const clarity = (
-      diamondFilterData?.clarity?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.clarity?.length) {
-          const min = filteredData?.clarity?.[0];
-          const max = filteredData?.clarity?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    clarity.length = clarity.length - 1;
-
-    const fluorescence = (
-      diamondFilterData?.fluorescence?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.fluorescence?.length) {
-          const min = filteredData?.fluorescence?.[0];
-          const max = filteredData?.fluorescence?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    fluorescence.length = fluorescence.length - 1;
-
-    const polish = (
-      diamondFilterData?.polish?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.polish?.length) {
-          const min = filteredData?.polish?.[0];
-          const max = filteredData?.polish?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    polish.length = polish.length - 1;
-
-    const symmetry = (
-      diamondFilterData?.symmetry?.options as Array<{
-        label: string;
-        value: string;
-      }>
-    )
-      .filter((_, index) => {
-        if (filteredData?.symmetry?.length) {
-          const min = filteredData?.symmetry?.[0];
-          const max = filteredData?.symmetry?.[1];
-
-          if (index >= min && index <= max) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      })
-      .map((clr) => clr.value);
-
-    symmetry.length = symmetry.length - 1;
-
-    return {
-      color,
-      fancyColor,
-      clarity,
-      fluorescence,
-      polish,
-      symmetry,
-    };
-  };
-
   const GetProductsList = useCallback(
     (queryOptions?: {
       currentPageNumber?: number;
@@ -284,8 +135,6 @@ const ProductListSection: FC<{
       isInfiniteScroll?: boolean;
     }) => {
       setLoading(true);
-      console.log("newFilteredValue :>> ", newFilteredValue);
-
       if (!newFilterData || !newFilteredValue) return "";
 
       const filters: string[] = [];
@@ -308,8 +157,7 @@ const ProductListSection: FC<{
           ranges.push(`{ field: "${key}", from: "${from}", to: "${to}" }`);
         }
       });
-      // console.log('filters :>> ', filters);
-      // console.log('ranges :>> ', ranges);
+
       const query = `
         query {
           diamondSearch(
@@ -340,8 +188,6 @@ const ProductListSection: FC<{
           }
         }
     `;
-
-      // console.log("__ query}}}}==", query);
 
       fetchAPI(query)
         .then((res) => {

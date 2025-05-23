@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Slider from "rc-slider";
-import _, { min, set } from "lodash";
+import _, { isNumber } from "lodash";
 import { Transition } from "@headlessui/react";
 import Shape from "./shape";
 import {
@@ -32,6 +32,7 @@ import ModalOverlay from "../model-overlay";
 import FilterModel from "./filter-model";
 import EditHideIcon from "../../assets/custom-icons/EditHideIcon";
 import MinMaxInput from "./MinMaxInput";
+import { Tooltip } from "../Tooltip";
 
 const FilterListSection: FC<{
   filteredData: FilterGlobalType;
@@ -89,10 +90,22 @@ const FilterListSection: FC<{
     setMinMaxAttributes(inputAttributes);
   }, [newFilterData]);
 
+  const getRangeValues = (data, min, max) => {
+    const startIndex = data.findIndex(item => item.value === min);
+    const endIndex = data.findIndex(item => item.value === max);
+  
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+      return "[]"; // fallback for invalid input
+    }
+  
+    const valuesInRange = data.slice(startIndex, endIndex + 1).map(item => item.value);
+    return valuesInRange
+  };
+
   const handleNewFilteredValue = () => {
     const value = newFilterData.reduce((acc: any, item: any) => {
       const hasOptions = Array.isArray(item.options) && item.options.length > 0;
-
+      let Range: number[] | string[] | null = []
       let min: number | string | null = item.min;
       let max: number | string | null = item.max;
 
@@ -110,18 +123,16 @@ const FilterListSection: FC<{
       }
 
       if (hasOptions) {
-        min = item.options.findIndex((opt: any) => opt.value === item.min);
-        max = item.options.findIndex((opt: any) => opt.value === item.max) + 1;
+        Range = getRangeValues(item.options, min, max);
 
         // Fallback in case value not found
         if (min === -1) min = 0;
         if (max === -1) max = item.options.length;
       } else {
-        min = Number(item.min);
-        max = Number(item.max);
+        Range = [Number(item.min), Number(item.max)];
       }
 
-      acc[item.attribute_code] = [min, max];
+      acc[item.attribute_code] = Range;
       return acc;
     }, {});
 
@@ -134,12 +145,6 @@ const FilterListSection: FC<{
     ) {
       initialFilteredValueRef.current = value;
     }
-    // const inputAttributes = {
-    //   rapnet_price: ["Min Price", "Max Price"],
-    //   depth_percentage: ["Min Depth %", "Max Depth %"],
-    //   table_percentage: ["Min Table %", "Max Table %"],
-    //   weight: ["Min Weight", "Max Weight"],
-    // };
   };
 
   function getFilterModelObj(
@@ -188,18 +193,35 @@ const FilterListSection: FC<{
 
   const handleAfterChangeSlider = (
     key: string,
-    e: number[] | number | undefined
+    e: number[] | number | undefined,
+    isRange: boolean
   ) => {
+    if (isRange && Array.isArray(e)) {
+      const Range = data(key).slice(e[0], e[1]).map(opt => opt.value);
+      setNewFilteredValue((prev: any) => ({
+        ...prev,
+        [key]: Range,
+      }));
+    } else {
     setNewFilteredValue((prev: any) => ({
       ...prev,
       [key]: e,
     }));
+  }
   };
 
   const handleChangeSlider = (
     key: string,
-    e: number[] | number | undefined
+    e: number[] | number | undefined,
+    isRange: boolean
   ) => {
+    if (isRange && Array.isArray(e)) {
+      const Range = data(key).slice(e[0], e[1]).map(opt => opt.value);
+      setNewFilteredValue((prev: any) => ({
+        ...prev,
+        [key]: Range,
+      }));
+    } else {
     if (Array.isArray(e)) {
       let [newMin, newMax] = e;
       if (newMax < newMin) [newMin, newMax] = [newMax, newMin];
@@ -209,7 +231,8 @@ const FilterListSection: FC<{
         [key]: [newMin, newMax],
       }));
     }
-  };
+  }
+};
 
   const handleResetFilter = () => {
     handleNewFilteredValue();
@@ -222,6 +245,15 @@ const FilterListSection: FC<{
 
   const handleHideBtn = () => {
     setIsFilterHide(!isFilterHide);
+  };
+
+  const getIndexRange = (options: any[], min: string, max: string): [number, number] => {
+    const minIndex = options?.findIndex(opt => opt.value === min);
+    const maxIndex = options?.findIndex(opt => opt.value === max)+1;
+  
+    if (minIndex === -1 || maxIndex === -1) return [0, 0]; // fallback if not found
+  
+    return [Math.min(minIndex, maxIndex), Math.max(minIndex, maxIndex)];
   };
 
   const handleApplyFilterInModel = useCallback(() => {
@@ -456,7 +488,13 @@ const FilterListSection: FC<{
                         <div className="w-full flex justify-between items-center">
                           <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
                             <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                              {item.label}
+                              <span className="flex">{item.label} {" "}
+                                {item.tooltip && <Tooltip content={item.tooltip} placement="top">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ml-1.5 inline-block">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                  </svg>
+                                </Tooltip>}
+                              </span>
                             </div>
                           </div>
 
@@ -496,13 +534,15 @@ const FilterListSection: FC<{
                                 marks={FilterSliderData(item.options, "3%")}
                                 step={0}
                                 onChangeComplete={(e) =>
-                                  (e[0] !== newFilteredValue[attr]?.[0] ||
-                                    e[1] !== newFilteredValue[attr]?.[1]) &&
-                                  handleAfterChangeSlider(attr, e)
+                                  handleAfterChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))
                                 }
-                                onChange={(e) => handleChangeSlider(attr, e)}
+                                onChange={(e) => handleChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))}
                                 defaultValue={item.options}
-                                value={newFilteredValue?.[attr]}
+                                value={!isNumber(newFilteredValue?.[attr]?.[0]) ? 
+                                  getIndexRange(
+                                    item.options,
+                                    newFilteredValue?.[attr]?.[0],
+                                    newFilteredValue?.[attr]?.[newFilteredValue?.[attr]?.length-1]) : newFilteredValue?.[attr]}
                                 allowCross={false}
                                 pushable
                                 ariaLabelForHandle={attr}
@@ -576,6 +616,7 @@ const FilterListSection: FC<{
                 handleChangeSlider={handleChangeSlider}
                 handleAfterChangeSlider={handleAfterChangeSlider}
                 newFilterData={newFilterData}
+                getIndexRange={getIndexRange}
               />
             </div>
           </Transition>
