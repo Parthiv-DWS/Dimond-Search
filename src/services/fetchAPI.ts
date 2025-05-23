@@ -1,7 +1,15 @@
-const apiUrl =
-  import.meta.env.VITE_APP_TYPE === "development"
-    ? "/graphql" // Use proxy in development
-    : import.meta.env.VITE_APP_API_URL; // Use full URL in production
+// const apiUrl =
+//   import.meta.env.VITE_APP_TYPE === "development"
+//     ? "/graphql" // Use proxy in development
+//     : import.meta.env.VITE_APP_API_URL; // Use full URL in production
+
+declare global {
+  interface Window {
+    diamondSearch?: any;
+  }
+}
+
+const apiUrl = window.diamondSearch.baseUrl+'graphql';
 
 export const fetchAPI = async (query: string) => {
   return await fetch(apiUrl, {
