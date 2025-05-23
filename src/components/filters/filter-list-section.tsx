@@ -532,7 +532,7 @@ const FilterListSection: FC<{
                                     : Number(item?.max)
                                 }
                                 marks={FilterSliderData(item.options, "3%")}
-                                step={0}
+                                step={0.1}
                                 onChangeComplete={(e) =>
                                   handleAfterChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))
                                 }

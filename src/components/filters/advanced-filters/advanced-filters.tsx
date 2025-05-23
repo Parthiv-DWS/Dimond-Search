@@ -110,7 +110,7 @@ export const AdvancedFilteres: FC<{
                               : Number(item?.max)
                           }
                           marks={FilterSliderData(item.options, "3%")}
-                          step={0}
+                          step={0.1}
                           onChangeComplete={(e) =>
                             (e[0] !== newFilteredValue[attr]?.[0] ||
                               e[1] !== newFilteredValue[attr]?.[1]) &&
