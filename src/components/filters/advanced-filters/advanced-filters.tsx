@@ -1,75 +1,44 @@
-import { FC, JSX } from "react";
+import React, { FC, JSX } from "react";
 import Slider from "rc-slider";
-import {
-  FilterGlobalType,
-  FilteredValueType,
-  GlobalFilterType,
-} from "../../../types";
+import { FilterGlobalType, GlobalFilterType } from "../../../types";
 import { FilterSliderData } from "../../../utility/utils";
-import { useModeStore } from "../../../store/theme-mode/store";
 import MinMaxInput from "../MinMaxInput";
+import { Tooltip } from "../../Tooltip";
+import { isNumber } from "lodash";
 
 export const AdvancedFilteres: FC<{
-  filteredData: FilterGlobalType;
   setFilteredData: React.Dispatch<React.SetStateAction<FilterGlobalType>>;
-  filteredValue: FilteredValueType;
-  setFilteredValue: React.Dispatch<React.SetStateAction<FilteredValueType>>;
+  newFilteredValue: any;
+  setNewFilteredValue: React.Dispatch<React.SetStateAction<any>>;
   globalFilterData: GlobalFilterType;
+  minMaxAttributes: {
+    [key: string]: [string, string];
+  };
+  isMinMaxAttribute: (attr: string) => boolean;
+  handleClickedCerti: (value: string) => void;
+  handleChangeSlider: (key: string, e: number[] | number | undefined, isRange: boolean) => void;
+  handleAfterChangeSlider: (
+    key: string,
+    e: number[] | number | undefined, isRange: boolean
+  ) => void;
+  newFilterData: any;
+  getIndexRange: (options: string[], min: string, max: string) => [number, number];
 }> = ({
-  filteredData,
-  setFilteredData,
-  filteredValue,
-  setFilteredValue,
+  newFilteredValue,
+  setNewFilteredValue,
   globalFilterData,
+  minMaxAttributes,
+  isMinMaxAttribute,
+  handleClickedCerti,
+  handleChangeSlider,
+  handleAfterChangeSlider,
+  newFilterData,
+  getIndexRange,
 }): JSX.Element => {
-  const { diamondFilterData } = useModeStore((state) => state);
-  const dynamicDiamondFilterData = Object.values(diamondFilterData);
-  const handleAfterChangeSlider = (
-    key: string,
-    e: number[] | number | undefined
-  ) => {
-    setFilteredData({
-      ...filteredData,
-      [key]: e,
-    });
-  };
-
-  const handleChangeSlider = (
-    key: string,
-    e: number[] | number | undefined
-  ) => {
-    if (Array.isArray(e)) {
-      let [newMin, newMax] = e;
-      if (newMax < newMin) [newMin, newMax] = [newMax, newMin];
-      setFilteredValue((prev) => ({
-        ...prev,
-        [key]: [newMin, newMax],
-      }));
-    }
-  };
-
-  const handleClickedCerti = (certificate: string) => {
-    setFilteredData({
-      ...filteredData,
-      certificate,
-    });
-  };
-
-  const minMaxAttributes = {
-    rapnet_price: ["Min Price", "Max Price"],
-    depth_percentage: ["Min Depth %", "Max Depth %"],
-    table_percentage: ["Min Table %", "Max Table %"],
-    weight: ["Min Weight", "Max Weight"],
-  } as const;
-
-  const isMinMaxAttribute = (
-    attr: string
-  ): attr is keyof typeof minMaxAttributes => attr in minMaxAttributes;
-
   return (
     <div className="relative">
       <div className="grid grid-cols-2 gap-6 w-full gap-y-6">
-        {[...dynamicDiamondFilterData]
+        {[...newFilterData]
           .filter(
             (item: any) =>
               item.attribute_code !== "shape" &&
@@ -99,7 +68,13 @@ export const AdvancedFilteres: FC<{
                   <div className="w-full flex justify-between items-center">
                     <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
                       <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                        {item.label}
+                        <span className="flex">{item.label} {" "}
+                          {item.tooltip && <Tooltip content={item.tooltip}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ml-1.5 inline-block">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            </svg>
+                          </Tooltip>}
+                        </span>
                       </div>
                     </div>
 
@@ -108,11 +83,11 @@ export const AdvancedFilteres: FC<{
                         min={Number(item.min)}
                         max={Number(item.max)}
                         value={[
-                          filteredValue?.[attr]?.[0] ?? Number(item.min),
-                          filteredValue?.[attr]?.[1] ?? Number(item.max),
+                          newFilteredValue?.[attr]?.[0] ?? Number(item.min),
+                          newFilteredValue?.[attr]?.[1] ?? Number(item.max),
                         ]}
                         onChange={([min, max]) =>
-                          setFilteredValue((prev) => ({
+                          setNewFilteredValue((prev) => ({
                             ...prev,
                             [attr]: [min, max],
                           }))
@@ -137,13 +112,19 @@ export const AdvancedFilteres: FC<{
                           marks={FilterSliderData(item.options, "3%")}
                           step={0}
                           onChangeComplete={(e) =>
-                            (e[0] !== filteredData[attr]?.[0] ||
-                              e[1] !== filteredData[attr]?.[1]) &&
-                            handleAfterChangeSlider(attr, e)
+                            (e[0] !== newFilteredValue[attr]?.[0] ||
+                              e[1] !== newFilteredValue[attr]?.[1]) &&
+                            handleAfterChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))
                           }
-                          onChange={(e) => handleChangeSlider(attr, e)}
+                          onChange={(e) => handleChangeSlider(attr, e,!isNumber(newFilteredValue?.[attr]?.[0]))}
                           defaultValue={item.options}
-                          value={filteredValue?.[attr]}
+                          value={
+                            !isNumber(newFilteredValue?.[attr]?.[0]) ? 
+                              getIndexRange(
+                                item.options,
+                                newFilteredValue?.[attr]?.[0],
+                                newFilteredValue?.[attr]?.[newFilteredValue?.[attr]?.length-1]) 
+                              : newFilteredValue?.[attr]}
                           allowCross={false}
                           pushable
                           ariaLabelForHandle={attr}

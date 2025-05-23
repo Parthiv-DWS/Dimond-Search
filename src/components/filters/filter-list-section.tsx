@@ -1,6 +1,6 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Slider from "rc-slider";
-import _ from "lodash";
+import _, { isNumber } from "lodash";
 import { Transition } from "@headlessui/react";
 import Shape from "./shape";
 import {
@@ -19,7 +19,6 @@ import {
 import { getInitialFilteredData } from "../../utility/utils";
 import {
   FilterGlobalType,
-  FilteredValueType,
   GlobalFilterType,
   ModelFilteredValueType,
 } from "../../types";
@@ -31,9 +30,9 @@ import EditShowIcon from "../../assets/custom-icons/EditShowIcon";
 import ChevroUpIcon from "../../assets/custom-icons/ChevroUpIcon";
 import ModalOverlay from "../model-overlay";
 import FilterModel from "./filter-model";
-import { getFilteredObjFromDiamondFilterData } from "../../services/getFilteredObjFromDiamondFilterData";
 import EditHideIcon from "../../assets/custom-icons/EditHideIcon";
 import MinMaxInput from "./MinMaxInput";
+import { Tooltip } from "../Tooltip";
 
 const FilterListSection: FC<{
   filteredData: FilterGlobalType;
@@ -44,6 +43,9 @@ const FilterListSection: FC<{
   filteredDataBackUp: FilterGlobalType;
   globalFilterData: GlobalFilterType;
   setGlobalFilterData: React.Dispatch<React.SetStateAction<GlobalFilterType>>;
+  newFilterData: any;
+  newFilteredValue: any;
+  setNewFilteredValue: React.Dispatch<React.SetStateAction<any>>;
 }> = ({
   filteredData,
   setFilteredData,
@@ -53,96 +55,121 @@ const FilterListSection: FC<{
   filteredDataBackUp,
   globalFilterData,
   setGlobalFilterData,
+  newFilterData,
+  newFilteredValue,
+  setNewFilteredValue,
 }) => {
   const initialFilteredData = getInitialFilteredData();
+
+  const initialFilteredValueRef = useRef(null);
+  const [minMaxAttributes, setMinMaxAttributes] = useState({});
+
   const { isDarkMode, diamondFilterData } = useModeStore((state) => state);
 
-  const [filteredValue, setFilteredValue] = useState<FilteredValueType>({
-    price: filteredData?.price || initialFilteredData.price,
-    rapnet_price: [
-      filteredData?.price?.minPrice ||
-        initialFilteredData?.price?.minPrice ||
-        0,
-      filteredData?.price?.maxPrice ||
-        initialFilteredData?.price?.maxPrice ||
-        0,
-    ],
-    weight: [
-      filteredData?.weight?.minWeight ||
-        initialFilteredData?.weight?.minWeight ||
-        0,
-      filteredData?.weight?.maxWeight ||
-        initialFilteredData?.weight?.maxWeight ||
-        0,
-    ],
-    table_percentage: [
-      filteredData?.table_percentage?.minTable ||
-        initialFilteredData?.table_percentage?.minTable ||
-        0,
-      filteredData?.table_percentage?.maxTable ||
-        initialFilteredData?.table_percentage?.maxTable ||
-        0,
-    ],
-
-    depth_percentage: [
-      filteredData?.depth_percentage?.minDepth ||
-        initialFilteredData?.depth_percentage?.minDepth ||
-        0,
-      filteredData?.depth_percentage?.maxDepth ||
-        initialFilteredData?.depth_percentage?.maxDepth ||
-        0,
-    ],
-    color: filteredData?.color || initialFilteredData?.color,
-    lab: filteredData?.lab || initialFilteredData?.lab,
-    cut: filteredData?.cut || initialFilteredData?.cut,
-
-    fancy_color: filteredData?.fancy_color || initialFilteredData?.fancy_color,
-
-    clarity: filteredData?.clarity || initialFilteredData?.clarity,
-
-    fluorescence: filteredData?.[FLUORESCENCE_INTENSITY] || [
-      0,
-      diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options
-        ? Object.keys(diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options)
-            .length - 1
-        : 0,
-    ],
-
-    polish: filteredData?.polish || initialFilteredData?.polish,
-
-    symmetry: filteredData?.symmetry || [
-      0,
-      diamondFilterData?.symmetry?.options
-        ? Object.keys(diamondFilterData?.symmetry?.options).length - 1
-        : 0,
-    ],
-  });
-
   const data = (filterName: string) => diamondFilterData[filterName]?.options;
-
-  const [modelFilteredValue, setModelFilteredValue] =
-    useState<ModelFilteredValueType>(getFilterModelObj(filteredData));
-
   const [isAdvancedAllow, setIsAdvancedAllow] = useState<boolean>(false);
   const [isFilterHide, setIsFilterHide] = useState<boolean>(false);
+  const [modelFilteredValue, setModelFilteredValue] =
+    useState<ModelFilteredValueType>(getFilterModelObj(newFilteredValue));
+
+  useEffect(() => {
+    if (!newFilterData?.length) return;
+    handleNewFilteredValue();
+
+    // Dynamically set input attributes where options is empty
+    const inputAttributes = newFilterData.reduce((acc: any, item: any) => {
+      const hasOptions = Array.isArray(item.options) && item.options.length > 0;
+      if (!hasOptions && item.attribute_code) {
+        acc[item.attribute_code] = [
+          `Min ${item.label ?? item.attribute_code.replaceAll("_", " ")}`,
+          `Max ${item.label ?? item.attribute_code.replaceAll("_", " ")}`,
+        ];
+      }
+      return acc;
+    }, {});
+    setMinMaxAttributes(inputAttributes);
+  }, [newFilterData]);
+
+  const getRangeValues = (data, min, max) => {
+    const startIndex = data.findIndex(item => item.value === min);
+    const endIndex = data.findIndex(item => item.value === max);
+  
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+      return "[]"; // fallback for invalid input
+    }
+  
+    const valuesInRange = data.slice(startIndex, endIndex + 1).map(item => item.value);
+    return valuesInRange
+  };
+
+  const handleNewFilteredValue = () => {
+    const value = newFilterData.reduce((acc: any, item: any) => {
+      const hasOptions = Array.isArray(item.options) && item.options.length > 0;
+      let Range: number[] | string[] | null = []
+      let min: number | string | null = item.min;
+      let max: number | string | null = item.max;
+
+      // If both min and max are blank, assign empty array
+      if (
+        min === null ||
+        min === undefined ||
+        min === "" ||
+        max === null ||
+        max === undefined ||
+        max === ""
+      ) {
+        acc[item.attribute_code] = [];
+        return acc;
+      }
+
+      if (hasOptions) {
+        Range = getRangeValues(item.options, min, max);
+
+        // Fallback in case value not found
+        if (min === -1) min = 0;
+        if (max === -1) max = item.options.length;
+      } else {
+        Range = [Number(item.min), Number(item.max)];
+      }
+
+      acc[item.attribute_code] = Range;
+      return acc;
+    }, {});
+
+    setNewFilteredValue(value);
+
+    if (
+      value &&
+      Object.keys(value).length > 0 &&
+      initialFilteredValueRef.current === null
+    ) {
+      initialFilteredValueRef.current = value;
+    }
+  };
 
   function getFilterModelObj(
     filterObj: FilterGlobalType
   ): ModelFilteredValueType {
-    const getMinMaxObj = (filterName: string) => ({
-      min:
-        data(filterName)?.find(
-          (index: number) =>
-            filterObj?.[filterName]?.[0] &&
-            index === filterObj?.[filterName]?.[0]
-        )?.value || data(filterName)?.[0]?.value,
-      max:
-        data(filterName)?.find(
-          (index: number) =>
-            filterObj?.[filterName]?.[1] &&
-            index === filterObj?.[filterName]?.[1] - 1
-        )?.value || data(filterName)[data(filterName)?.length - 2]?.value,
-    });
+    const getMinMaxObj = (filterName: string) => {
+      const filterData = data(filterName) || [];
+      const filterValues = filterObj?.[filterName];
+
+      const minIndex = filterValues?.[0];
+      const maxIndex = filterValues?.[1];
+
+      const minValue =
+        filterData.find((_, i) => i === minIndex)?.value ??
+        filterData[0]?.value;
+
+      const maxValue =
+        filterData.find((_, i) => i === maxIndex - 1)?.value ??
+        filterData[filterData.length - 2]?.value;
+
+      return {
+        min: minValue,
+        max: maxValue,
+      };
+    };
 
     return {
       shape: filterObj?.shape || initialFilteredData?.shape,
@@ -166,109 +193,67 @@ const FilterListSection: FC<{
 
   const handleAfterChangeSlider = (
     key: string,
-    e: number[] | number | undefined
+    e: number[] | number | undefined,
+    isRange: boolean
   ) => {
-    setFilteredData({
-      ...filteredData,
+    if (isRange && Array.isArray(e)) {
+      const Range = data(key).slice(e[0], e[1]).map(opt => opt.value);
+      setNewFilteredValue((prev: any) => ({
+        ...prev,
+        [key]: Range,
+      }));
+    } else {
+    setNewFilteredValue((prev: any) => ({
+      ...prev,
       [key]: e,
-    });
+    }));
+  }
   };
 
   const handleChangeSlider = (
     key: string,
-    e: number[] | number | undefined
+    e: number[] | number | undefined,
+    isRange: boolean
   ) => {
+    if (isRange && Array.isArray(e)) {
+      const Range = data(key).slice(e[0], e[1]).map(opt => opt.value);
+      setNewFilteredValue((prev: any) => ({
+        ...prev,
+        [key]: Range,
+      }));
+    } else {
     if (Array.isArray(e)) {
       let [newMin, newMax] = e;
       if (newMax < newMin) [newMin, newMax] = [newMax, newMin];
-      setFilteredValue((prev) => ({
+
+      setNewFilteredValue((prev: any) => ({
         ...prev,
         [key]: [newMin, newMax],
       }));
     }
+  }
+};
+
+  const handleResetFilter = () => {
+    handleNewFilteredValue();
   };
-
-  const handleResetFilter = useCallback(() => {
-    const allData = getFilteredObjFromDiamondFilterData(diamondFilterData);
-
-    if (allData.data) {
-      setFilteredData({
-        ...initialFilteredData,
-        ...allData.data,
-      });
-
-      setFilteredValue({
-        price: {
-          minPrice: Number(diamondFilterData?.rapnet_price?.min),
-          maxPrice: Number(diamondFilterData?.rapnet_price?.max),
-        },
-        rapnet_price: [
-          Number(diamondFilterData?.rapnet_price?.min),
-          Number(diamondFilterData?.rapnet_price?.max),
-        ],
-        weight: [
-          Number(diamondFilterData?.weight?.min),
-          Number(diamondFilterData?.weight?.max),
-        ],
-        depth_percentage: [
-          parseFloat(diamondFilterData?.depth_percentage?.min),
-          parseFloat(diamondFilterData?.depth_percentage?.max),
-        ],
-        table_percentage: [
-          parseFloat(diamondFilterData?.table_percentage?.min),
-          parseFloat(diamondFilterData?.table_percentage?.max),
-        ],
-
-        color: filteredDataBackUp?.color || initialFilteredData?.color,
-        cut: filteredDataBackUp?.cut || initialFilteredData?.cut,
-        lab: filteredDataBackUp?.lab || initialFilteredData?.lab,
-
-        fancy_color:
-          filteredDataBackUp?.fancy_color || initialFilteredData?.fancy_color,
-
-        clarity: filteredDataBackUp?.clarity || initialFilteredData?.clarity,
-
-        fluorescence: filteredDataBackUp?.fluorescence || [
-          0,
-          diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options
-            ? Object.keys(diamondFilterData?.[FLUORESCENCE_INTENSITY]?.options)
-                .length - 1
-            : 0,
-        ],
-
-        polish: filteredDataBackUp?.polish || initialFilteredData?.polish,
-
-        symmetry: filteredDataBackUp?.symmetry || [
-          0,
-          diamondFilterData?.symmetry?.options
-            ? Object.keys(diamondFilterData?.symmetry?.options).length - 1
-            : 0,
-        ],
-      });
-      // here we are not reseting Certificates
-    } else {
-      console.error("Error in resetting filter");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    diamondFilterData,
-    filteredDataBackUp?.clarity,
-    filteredDataBackUp?.color,
-    filteredDataBackUp?.lab,
-    filteredDataBackUp?.fancy_color,
-    filteredDataBackUp?.[FLUORESCENCE_INTENSITY],
-    filteredDataBackUp?.polish,
-    filteredDataBackUp?.symmetry,
-    initialFilteredData,
-  ]);
 
   const handleAddFilter = () => {
     setIsModelOpen(true);
-    setModelFilteredValue(getFilterModelObj(filteredData));
+    setModelFilteredValue(getFilterModelObj(newFilteredValue));
   };
 
   const handleHideBtn = () => {
     setIsFilterHide(!isFilterHide);
+  };
+
+  const getIndexRange = (options: any[], min: string, max: string): [number, number] => {
+    const minIndex = options?.findIndex(opt => opt.value === min);
+    const maxIndex = options?.findIndex(opt => opt.value === max)+1;
+  
+    if (minIndex === -1 || maxIndex === -1) return [0, 0]; // fallback if not found
+  
+    return [Math.min(minIndex, maxIndex), Math.max(minIndex, maxIndex)];
   };
 
   const handleApplyFilterInModel = useCallback(() => {
@@ -338,72 +323,22 @@ const FilterListSection: FC<{
       symmetry: [minSymmetry, maxSymmetry],
     });
 
-    setFilteredValue({
-      price: modelFilteredValue?.price,
-      rapnet_price: [
-        modelFilteredValue?.price?.minPrice ||
-          initialFilteredData?.price?.minPrice ||
-          0,
-        modelFilteredValue?.price?.maxPrice ||
-          initialFilteredData?.price?.maxPrice ||
-          0,
-      ],
-      weight: [
-        modelFilteredValue?.weight?.minWeight ||
-          initialFilteredData?.weight?.minWeight ||
-          0,
-        modelFilteredValue?.weight?.maxWeight ||
-          initialFilteredData?.weight?.maxWeight ||
-          0,
-      ],
-      depth_percentage: [
-        modelFilteredValue?.depth_percentage?.minDepth || 0,
-        modelFilteredValue?.depth_percentage?.maxDepth || 0,
-      ],
-      table_percentage: [
-        modelFilteredValue?.table_percentage?.minTable ||
-          initialFilteredData?.table_percentage?.minTable ||
-          0,
-        modelFilteredValue?.table_percentage?.minTable ||
-          initialFilteredData?.table_percentage?.minTable ||
-          0,
-      ],
-
-      color: [minColor, maxColor],
-      lab: [minLab, maxLab],
-      fancy_color: [minFancyColor, maxFancyColor],
-      clarity: [minClarity, maxClarity],
-      fluorescence: [minFluorescenceIntensity, maxFluorescenceIntensity],
-      polish: [minPolish, maxPolish],
-      symmetry: [minSymmetry, maxSymmetry],
-    });
-
     setIsModelOpen(false);
     setApplyFilter(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, filteredData, initialFilteredData, modelFilteredValue]);
 
-  const disableResetBtn = useMemo(
-    () => _.isEqual(filteredDataBackUp, filteredData),
-    [filteredData, filteredDataBackUp]
-  );
-
-  const dynamicDiamondFilterData = Object.values(diamondFilterData);
-
   const handleClickedCerti = (certificate: string) => {
-    setFilteredData({
-      ...filteredData,
-      certificate,
-    });
+    setNewFilteredValue((prev: any) => ({
+      ...prev,
+      certificates: certificate,
+    }));
   };
 
-  const minMaxAttributes = {
-    rapnet_price: ["Min Price", "Max Price"],
-    depth_percentage: ["Min Depth %", "Max Depth %"],
-    table_percentage: ["Min Table %", "Max Table %"],
-    weight: ["Min Weight", "Max Weight"],
-  } as const;
-
+  const disableResetBtn = useMemo(
+    () => _.isEqual(initialFilteredValueRef.current, newFilteredValue),
+    [newFilteredValue]
+  );
   const isMinMaxAttribute = (
     attr: string
   ): attr is keyof typeof minMaxAttributes => attr in minMaxAttributes;
@@ -506,7 +441,7 @@ const FilterListSection: FC<{
           <div className="flex flex-col gap-y-4 items-start w-full relative flex-[0_0_auto]">
             {/* Rest of the filters in grid layout */}
             <div className="grid grid-cols-1 gap-x-6 w-full gap-y-6">
-              {[...dynamicDiamondFilterData]
+              {[...newFilterData]
                 .filter(
                   (a) =>
                     (a as { attribute_code: string }).attribute_code === "shape"
@@ -514,18 +449,19 @@ const FilterListSection: FC<{
                 .map((item: any, index: number) => (
                   <div key={index + item.label}>
                     <Shape
-                      filteredData={filteredData}
-                      setFilteredData={setFilteredData}
+                      newFilteredValue={newFilteredValue}
+                      setNewFilteredValue={setNewFilteredValue}
                       item={item}
                     />
                   </div>
                 ))}
             </div>
             <div className="grid grid-cols-2 gap-6 w-full gap-y-6">
-              {[...dynamicDiamondFilterData]
+              {[...newFilterData]
                 .filter(
                   (item: any) =>
-                    item.attribute_code !== "shape" && !item.isAdvance &&
+                    item.attribute_code !== "shape" &&
+                    !item.isAdvance &&
                     item.attribute_code !==
                       (globalFilterData.colorType === "mined"
                         ? "fancy_color"
@@ -552,7 +488,13 @@ const FilterListSection: FC<{
                         <div className="w-full flex justify-between items-center">
                           <div className="inline-flex items-center justify-center gap-2 px-0 py-2 relative flex-[0_0_auto]">
                             <div className="relative w-fit mt-[-1.00px] [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-medium-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
-                              {item.label}
+                              <span className="flex">{item.label} {" "}
+                                {item.tooltip && <Tooltip content={item.tooltip} placement="top">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 ml-1.5 inline-block">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                  </svg>
+                                </Tooltip>}
+                              </span>
                             </div>
                           </div>
 
@@ -561,11 +503,13 @@ const FilterListSection: FC<{
                               min={Number(item.min)}
                               max={Number(item.max)}
                               value={[
-                                filteredValue?.[attr]?.[0] ?? Number(item.min),
-                                filteredValue?.[attr]?.[1] ?? Number(item.max),
+                                newFilteredValue?.[attr]?.[0] ??
+                                  Number(item.min),
+                                newFilteredValue?.[attr]?.[1] ??
+                                  Number(item.max),
                               ]}
                               onChange={([min, max]) =>
-                                setFilteredValue((prev) => ({
+                                setNewFilteredValue((prev: any) => ({
                                   ...prev,
                                   [attr]: [min, max],
                                 }))
@@ -590,13 +534,15 @@ const FilterListSection: FC<{
                                 marks={FilterSliderData(item.options, "3%")}
                                 step={0}
                                 onChangeComplete={(e) =>
-                                  (e[0] !== filteredData[attr]?.[0] ||
-                                    e[1] !== filteredData[attr]?.[1]) &&
-                                  handleAfterChangeSlider(attr, e)
+                                  handleAfterChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))
                                 }
-                                onChange={(e) => handleChangeSlider(attr, e)}
+                                onChange={(e) => handleChangeSlider(attr, e, !isNumber(newFilteredValue?.[attr]?.[0]))}
                                 defaultValue={item.options}
-                                value={filteredValue?.[attr]}
+                                value={!isNumber(newFilteredValue?.[attr]?.[0]) ? 
+                                  getIndexRange(
+                                    item.options,
+                                    newFilteredValue?.[attr]?.[0],
+                                    newFilteredValue?.[attr]?.[newFilteredValue?.[attr]?.length-1]) : newFilteredValue?.[attr]}
                                 allowCross={false}
                                 pushable
                                 ariaLabelForHandle={attr}
@@ -660,11 +606,17 @@ const FilterListSection: FC<{
           >
             <div>
               <AdvancedFilteres
-                filteredData={filteredData}
                 setFilteredData={setFilteredData}
-                filteredValue={filteredValue}
-                setFilteredValue={setFilteredValue}
+                newFilteredValue={newFilteredValue}
+                setNewFilteredValue={setNewFilteredValue}
                 globalFilterData={globalFilterData}
+                minMaxAttributes={minMaxAttributes}
+                isMinMaxAttribute={isMinMaxAttribute}
+                handleClickedCerti={handleClickedCerti}
+                handleChangeSlider={handleChangeSlider}
+                handleAfterChangeSlider={handleAfterChangeSlider}
+                newFilterData={newFilterData}
+                getIndexRange={getIndexRange}
               />
             </div>
           </Transition>

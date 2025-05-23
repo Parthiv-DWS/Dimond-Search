@@ -158,8 +158,8 @@ const FilterModel: FC<{
                 .map((item: any, index: number) => (
                   <div key={index + item.label}>
                     <Shape
-                      filteredData={filteredData}
-                      setFilteredData={setFilteredData}
+                      newFilteredValue={filteredData}
+                      setNewFilteredValue={setFilteredData}
                       item={item}
                     />
                   </div>
@@ -172,14 +172,11 @@ const FilterModel: FC<{
                 .filter((item: any) => {
                   // Show all filters except shape (handled separately)
                   if (item.attribute_code === "shape") return false;
+                  // Show only filters that are not advance
 
+                  if (item.isAdvance) return false;
                   // Only show rapnet_price, clarity, and the correct color/fancy_color
-                  if (
-                    item.attribute_code === "rapnet_price" ||
-                    item.attribute_code === "clarity"
-                  ) {
-                    return true;
-                  }
+
                   // For color/fancy_color, only show the relevant one
                   if (
                     (item.attribute_code === "color" &&
@@ -189,7 +186,7 @@ const FilterModel: FC<{
                   ) {
                     return true;
                   }
-                  return false;
+                  return true;
                 })
                 .map((item: any) => {
                   // Price/min-max input
@@ -354,15 +351,16 @@ const FilterModel: FC<{
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {[...dynamicDiamondFilterData]
               .filter((item: any) => {
-                // Exclude shape and main filters
+                if (item.attribute_code === "shape") return false;
+
+                if (!item.isAdvance) return false;
                 if (
-                  item.attribute_code === "shape" ||
-                  item.attribute_code === "rapnet_price" ||
-                  item.attribute_code === "clarity" ||
-                  item.attribute_code === "color" ||
-                  item.attribute_code === "fancy_color"
+                  (item.attribute_code === "color" &&
+                    globalFilterData.colorType === MINED) ||
+                  (item.attribute_code === "fancy_color" &&
+                    globalFilterData.colorType !== MINED)
                 ) {
-                  return false;
+                  return true;
                 }
                 return true;
               })
@@ -386,7 +384,10 @@ const FilterModel: FC<{
                   ].includes(item.attribute_code)
                 ) {
                   let value: [number, number] = [0, 0];
-                  let onChange: ([min, max]: [number, number]) => void = () => {};
+                  let onChange: ([min, max]: [
+                    number,
+                    number
+                  ]) => void = () => {};
                   if (item.attribute_code === "weight") {
                     value = [
                       modelFilteredValue?.weight?.minWeight ?? Number(item.min),
@@ -423,7 +424,10 @@ const FilterModel: FC<{
                       }));
                   }
                   return item.range ? (
-                    <Accordion key={item.attribute_code} label={item.label}>
+                    <Accordion
+                      key={item.attribute_code + item.label}
+                      label={item.label}
+                    >
                       <div className="flex items-center gap-4">
                         <input
                           className="outline-none w-24 bg-[var(--dark-theme-color)] text-center rounded"
@@ -449,7 +453,10 @@ const FilterModel: FC<{
                       </div>
                     </Accordion>
                   ) : item.attribute_code === "certificates" ? (
-                    <div className="bg-[var(--theme-filter-color)] px-4 py-2 rounded-lg">
+                    <div
+                      key={item.attribute_code}
+                      className="bg-[var(--theme-filter-color)] px-4 py-2 rounded-lg"
+                    >
                       <h2>
                         <button
                           type="button"
@@ -463,7 +470,7 @@ const FilterModel: FC<{
                       <div className="flex flex-wrap items-start justify-between content-start gap-6 flex-[0_0_auto]">
                         {item?.options?.map((option: any, i: number) => (
                           <div
-                            key={i}
+                            key={i + option.label + option.value}
                             onClick={() => handleClickedCerti(option?.value)}
                             className="cursor-pointer w-1/4 h-full py-3 flex justify-center bg-[var(--dark-theme-color)] rounded-lg border border-solid border-[var(--filter-border-color)]"
                           >

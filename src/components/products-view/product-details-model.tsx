@@ -16,8 +16,6 @@ const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamo
   const [selectedImage, setSelectedImage] = useState(MainRectangleImage);
   const handleClick = async (action: string) => {
     const isDev = import.meta.env.VITE_APP_TYPE === "development";
-    console.log("action", action);
-    console.log("isDev", isDev);
       if (isDev) {
         window.diamondSearch = window?.diamondSearch || {};
         window.diamondSearch.urls = window?.diamondSearch.urls || {};
@@ -135,7 +133,7 @@ const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamo
             key={i}
           >
             <span>{item?.label}</span>
-            <span>{item?.value === 'depth_percentage' || item?.value === 'table_percentage' ? `${selectedDiamond?.[item?.value]} %` : item?.value === 'rapnet_price' ? `$ ${selectedDiamond?.[item?.value]}` : selectedDiamond?.[item?.value]}</span>
+            <span>{item?.value === 'depth_percentage' || item?.value === 'table_percentage' ? `${selectedDiamond?.[item?.value]} %` : item?.value === 'rapnet_price' ? `${selectedDiamond?.[item?.value]}` : selectedDiamond?.[item?.value]}</span>
           </div>
         ))}
         <div className="flex gap-x-6 gap-y-4 flex-col md:flex-row justify-between whitespace-nowrap">
