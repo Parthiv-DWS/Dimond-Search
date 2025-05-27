@@ -1,4 +1,4 @@
-import { CONTACT_US, HELP, SERVICES } from "../constants";
+import { CONTACT_US, HELP, SERVICES, SETTINGS_OBJ } from "../constants";
 import MapLightIcon from "../assets/icons/social/light/Map_Pin.svg";
 import MailLightIcon from "../assets/icons/social/light/Mail.svg";
 import PhoneLightIcon from "../assets/icons/social/light/Phone.svg";
@@ -27,7 +27,7 @@ import Hhover3 from "../assets/diamond-shapes/h-hover3";
 import Ehover3 from "../assets/diamond-shapes/e-hover3";
 import Chover3 from "../assets/diamond-shapes/c-hover3";
 import Ashover6 from "../assets/diamond-shapes/as-hover6";
-import { FilterGlobalType } from "../types";
+import { FilterGlobalType, SettingsType } from "../types";
 import { map } from "lodash";
 
 export const SocialList: any = () => {
@@ -539,3 +539,13 @@ export const FilterSliderData = (data, left): any =>
       label: item.label,
     };
   });
+
+export const getSettings = (): SettingsType => {
+  const appType = import.meta.env.VITE_APP_TYPE;
+
+  if (appType === 'development') {
+    return SETTINGS_OBJ;
+  } else {
+    return window.diamondSearch as SettingsType;
+  }
+};

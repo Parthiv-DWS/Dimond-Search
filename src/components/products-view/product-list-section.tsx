@@ -25,6 +25,7 @@ import {
   SHAPE,
   SHAPE_TITLE,
 } from "../../constants";
+import { getSettings } from "../../utility/utils";
 
 export const CompareItemCount = () => (
   <span className="whitespace-nowrap [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
@@ -113,7 +114,7 @@ const ProductListSection: FC<{
   const [totalProductsCount, setTotalProductsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<ObjectType[]>([]);
-  const [productListView, setProductListView] = useState("grid");
+  const [productListView, setProductListView] = useState("");
   const [isUp, setIsUp] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState({});
@@ -126,6 +127,14 @@ const ProductListSection: FC<{
   const [totalProducts, setTotalProducts] = useState<ObjectType[]>([]);
   const [currentPage, setCurrentPage] = useState(INITIAL_CURRENT_PAGE);
   const pageRef = useRef(1);
+
+  const settings = getSettings();
+
+  useEffect(() => {
+    if(settings?.list_mode){
+      setProductListView(settings.list_mode)
+    }
+  },[])
 
   const GetProductsList = useCallback(
     (queryOptions?: {
@@ -323,6 +332,8 @@ const ProductListSection: FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newFilteredValue, globalFilterData]);
 
+  // const settings = getSettings();
+
   return (
     <>
       <div className="py-4 md:py-8 flex flex-col px-3 gap-y-6">
@@ -488,9 +499,11 @@ const ProductListSection: FC<{
         )}
         <div className="flex flex-col gap-y-6 sm:flex-row justify-start sm:justify-between">
           <div>
-            <button className="flex items-center justify-center bg-[var(--theme-alter-color)] py-4 px-6 rounded-lg [font-family:var(--paregraph-p3-semibold-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-color)] text-[length:var(--paregraph-p3-semibold-font-size)] tracking-[var(--paregraph-p3-semibold-letter-spacing)] leading-[var(--paregraph-p3-semibold-line-height)] [font-style:var(--paregraph-p3-semibold-font-style)]">
+            { settings?.enable_compare === "1" && (
+              <button className="flex items-center justify-center bg-[var(--theme-alter-color)] py-4 px-6 rounded-lg [font-family:var(--paregraph-p3-semibold-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-color)] text-[length:var(--paregraph-p3-semibold-font-size)] tracking-[var(--paregraph-p3-semibold-letter-spacing)] leading-[var(--paregraph-p3-semibold-line-height)] [font-style:var(--paregraph-p3-semibold-font-style)]">
               Compare Items
             </button>
+            )}
           </div>
           {isPagination && (
             <Pagination
