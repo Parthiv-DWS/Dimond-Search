@@ -27,7 +27,7 @@ import Hhover3 from "../assets/diamond-shapes/h-hover3";
 import Ehover3 from "../assets/diamond-shapes/e-hover3";
 import Chover3 from "../assets/diamond-shapes/c-hover3";
 import Ashover6 from "../assets/diamond-shapes/as-hover6";
-import { FilterGlobalType, SettingsType } from "../types";
+import { FilterGlobalType } from "../types";
 import { map } from "lodash";
 
 export const SocialList: any = () => {
@@ -540,12 +540,35 @@ export const FilterSliderData = (data, left): any =>
     };
   });
 
-export const getSettings = (): SettingsType => {
+export const getSettings = () => {
   const appType = import.meta.env.VITE_APP_TYPE;
 
   if (appType === 'development') {
     return SETTINGS_OBJ;
   } else {
-    return window.diamondSearch as SettingsType;
+    return window.diamondSearch?.settings;
   }
 };
+
+export function toTitleCase(str: string) {
+  if (!str) {
+    return "";
+  }
+  return str.toLowerCase() // Optional: convert entire string to lower case first
+            .split(' ')      // Split the string into an array of words
+            .map(word => {   // Iterate over each word
+              if (word.length === 0) {
+                return ""; // Handle multiple spaces
+              }
+              return word.charAt(0).toUpperCase() + word.slice(1);
+            })
+            .join(' ');      // Join the words back into a string
+}
+
+export function stringToInteger(str: string) {
+  if (typeof str !== 'string') {
+    return NaN;
+  }
+  const numericString = str.replace(/[$,]/g, "");
+  return parseFloat(numericString)
+}

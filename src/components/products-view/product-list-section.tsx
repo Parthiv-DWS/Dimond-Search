@@ -15,17 +15,7 @@ import ModalOverlay from "../model-overlay";
 import ProductDetailsModel from "./product-details-model";
 import Dropdown from "../dropdown";
 import { fetchAPI } from "../../services/fetchAPI";
-import {
-  COLOR,
-  COLOR_TITLE,
-  POLISH,
-  POLISH_TITLE,
-  PRICE_TITLE,
-  RAPNET_PRICE,
-  SHAPE,
-  SHAPE_TITLE,
-} from "../../constants";
-import { getSettings } from "../../utility/utils";
+import { getSettings, stringToInteger, toTitleCase } from "../../utility/utils";
 
 export const CompareItemCount = () => (
   <span className="whitespace-nowrap [font-family:var(--paregraph-p1-medium-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-alter-color)] text-[length:var(--paregraph-p3-medium-font-size)] tracking-[var(--paregraph-p3-medium-letter-spacing)] leading-[var(--paregraph-p3-medium-line-height)] [font-style:var(--paregraph-p3-medium-font-style)]">
@@ -37,7 +27,9 @@ export const ProductViewIcons: FC<{
   productListView: string;
   setProductListView: (value: string) => void;
   isDarkMode: boolean;
-}> = ({ productListView, setProductListView, isDarkMode }) => (
+  setItemsPerPage: (value: number) => void;
+  settings: any
+}> = ({ productListView, setProductListView, isDarkMode, setItemsPerPage, settings }) => (
   <>
     <button
       className={`p-2 border w-10 h-10 md:w-auto md:h-auto flex items-center md:block ${
@@ -45,7 +37,7 @@ export const ProductViewIcons: FC<{
           ? "border-[var(--theme-alter-color)]"
           : "border-grayscale-2900 cursor-default"
       }`}
-      onClick={() => setProductListView("grid")}
+      onClick={() => {setProductListView("grid"); setItemsPerPage(Number(settings?.grid_per_page))}}
       aria-label="grid-button"
     >
       <ListIcon
@@ -64,7 +56,7 @@ export const ProductViewIcons: FC<{
           ? "border-[var(--theme-alter-color)]"
           : "border-grayscale-2900 cursor-default"
       }`}
-      onClick={() => setProductListView("list")}
+      onClick={() => {setProductListView("list"); setItemsPerPage(Number(settings?.list_per_page))}}
       aria-label="list-button"
     >
       <GridIcon
@@ -80,15 +72,7 @@ export const ProductViewIcons: FC<{
   </>
 );
 
-const SHOW_ITEMS_PER_PAGE = 6;
 const INITIAL_CURRENT_PAGE = 1;
-
-const shortByList = [
-  { label: SHAPE, value: SHAPE_TITLE },
-  { label: COLOR, value: COLOR_TITLE },
-  { label: RAPNET_PRICE, value: PRICE_TITLE },
-  { label: POLISH, value: POLISH_TITLE },
-];
 
 const ProductListSection: FC<{
   filteredData: FilterGlobalType;
@@ -119,9 +103,13 @@ const ProductListSection: FC<{
   const [open, setOpen] = useState(false);
   const [selectedDiamond, setSelectedDiamond] = useState({});
   const [favProduct, setFavProduct] = useState<string[]>([]);
-  const [selectedShortBy, setSelectedShortBy] = useState(shortByList[0]);
-  const [isPagination] = useState(false);
+  const [selectedShortBy, setSelectedShortBy] = useState({label: '', value: ''});
+  const [isPagination, setIsPagination] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
   const [showProductsPerPage, setShowProductsPerPage] = useState<ObjectType[]>(
+    []
+  );
+  const [shortByList, setShortByList] = useState<ObjectType[]>(
     []
   );
   const [totalProducts, setTotalProducts] = useState<ObjectType[]>([]);
@@ -133,8 +121,19 @@ const ProductListSection: FC<{
   useEffect(() => {
     if(settings?.list_mode){
       setProductListView(settings.list_mode)
+      setIsPagination(settings.enable_infinity_scroll === '0')
+      setItemsPerPage(settings.list_mode === 'grid' ? Number(settings.grid_per_page) : Number(settings.list_per_page))
+      const sortByList = settings.sort_options.map((item) => {
+        return {
+          label: toTitleCase(item),
+          value: item,
+        };
+      })
+      setShortByList(sortByList)
+      const selectedSortBy: {label: string, value: string} = sortByList.find((item) => item.value === settings.default_sort_option) as  {label: string, value: string};
+      setSelectedShortBy(selectedSortBy);
     }
-  },[])
+  },[settings])
 
   const GetProductsList = useCallback(
     (queryOptions?: {
@@ -172,7 +171,7 @@ const ProductListSection: FC<{
           diamondSearch(
             filters: [${filters.join(",")}]
             range: [${ranges.join(",")}]
-            pageSize: ${SHOW_ITEMS_PER_PAGE}
+            pageSize: ${itemsPerPage}
             currentPage: ${
               queryOptions?.currentPageNumber || INITIAL_CURRENT_PAGE
             }
@@ -243,6 +242,8 @@ const ProductListSection: FC<{
       selectedShortBy,
       isUp,
       globalFilterData,
+      settings,
+      itemsPerPage
     ]
   );
 
@@ -295,7 +296,7 @@ const ProductListSection: FC<{
     const nextPage = pageRef.current + 1;
     pageRef.current = nextPage;
     setCurrentPage(nextPage); // This is optional if you're showing current page
-    GetProductsList({ currentPageNumber: nextPage, isInfiniteScroll: true });
+    GetProductsList({ currentPageNumber: nextPage, isInfiniteScroll: !isPagination });
   };
 
   useEffect(() => {
@@ -303,10 +304,9 @@ const ProductListSection: FC<{
       (product) =>
         typeof filteredData?.price?.minPrice === "number" &&
         typeof filteredData?.price?.maxPrice === "number" &&
-        Number(product?.rapnet_price) >= filteredData?.price?.minPrice &&
-        Number(product?.rapnet_price) <= filteredData?.price?.maxPrice
+        stringToInteger(product?.rapnet_price) >= filteredData?.price?.minPrice &&
+        stringToInteger(product?.rapnet_price) <= filteredData?.price?.maxPrice
     );
-
     setFilteredProducts(data);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -330,9 +330,7 @@ const ProductListSection: FC<{
       if (currentPage > 1) setCurrentPage(INITIAL_CURRENT_PAGE);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newFilteredValue, globalFilterData]);
-
-  // const settings = getSettings();
+  }, [newFilteredValue, globalFilterData, settings?.default_sort_option]);
 
   return (
     <>
@@ -363,7 +361,7 @@ const ProductListSection: FC<{
                 </div>
                 <div className="w-[154px] bg-[var(--dark-theme-color)] rounded-[8px] relative">
                   <Dropdown
-                    value={selectedShortBy.value}
+                    value={selectedShortBy.label}
                     dataList={shortByList}
                     handleClickItem={handleClickMinShortByItem}
                   />
@@ -382,6 +380,8 @@ const ProductListSection: FC<{
                 setProductListView={setProductListView}
                 productListView={productListView}
                 isDarkMode={isDarkMode}
+                setItemsPerPage={setItemsPerPage}
+                settings={settings}
               />
             </div>
           </div>
@@ -390,6 +390,8 @@ const ProductListSection: FC<{
               setProductListView={setProductListView}
               productListView={productListView}
               isDarkMode={isDarkMode}
+              setItemsPerPage={setItemsPerPage}
+              settings={settings}
             />
             <div className="items-center justify-center py-4 px-6">
               <CompareItemCount />
@@ -499,7 +501,7 @@ const ProductListSection: FC<{
         )}
         <div className="flex flex-col gap-y-6 sm:flex-row justify-start sm:justify-between">
           <div>
-            { settings?.enable_compare === "1" && (
+            {settings?.enable_compare === "1" && (
               <button className="flex items-center justify-center bg-[var(--theme-alter-color)] py-4 px-6 rounded-lg [font-family:var(--paregraph-p3-semibold-font-family)] font-[number:var(--paregraph-p3-semibold-font-weight)] text-[var(--theme-color)] text-[length:var(--paregraph-p3-semibold-font-size)] tracking-[var(--paregraph-p3-semibold-letter-spacing)] leading-[var(--paregraph-p3-semibold-line-height)] [font-style:var(--paregraph-p3-semibold-font-style)]">
               Compare Items
             </button>
@@ -509,7 +511,7 @@ const ProductListSection: FC<{
             <Pagination
               dataList={filteredProducts}
               totalItems={totalProductsCount}
-              itemsPerPage={SHOW_ITEMS_PER_PAGE}
+              itemsPerPage={itemsPerPage}
               currentPage={currentPage}
               setShowProductsPerPage={setShowProductsPerPage}
               setCurrentPage={setCurrentPage}
