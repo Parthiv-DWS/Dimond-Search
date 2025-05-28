@@ -60,7 +60,7 @@ export default function Dropdown({
                       onClick={() => handleClickItem(item)}
                       disabled={isItemDisabled}
                     >
-                      {item.value}
+                      {item.label}
                     </button>
                   );
                 }}

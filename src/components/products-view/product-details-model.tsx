@@ -5,7 +5,7 @@ import Rectangle2Image from "../../assets/rectangleIcon/Rectangle 47.png";
 import Rectangle3Image from "../../assets/rectangleIcon/Rectangle 48.png";
 import Rectangle4Image from "../../assets/rectangleIcon/Rectangle 49.png";
 import MainRectangleImage from "../../assets/rectangleIcon/image 18.png";
-import { ProductDetailList } from "../../utility/utils";
+import { getSettings, ProductDetailList } from "../../utility/utils";
 import { useModeStore } from "../../store/theme-mode/store";
 
 const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamond: any, setSelectedDiamond: React.Dispatch<React.SetStateAction<any>> }> = ({
@@ -14,6 +14,7 @@ const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamo
   const { isDarkMode } = useModeStore((state) => state);
   const productDetailList = ProductDetailList();
   const [selectedImage, setSelectedImage] = useState(MainRectangleImage);
+  const settings = getSettings();
   const handleClick = async (action: string) => {
     const isDev = import.meta.env.VITE_APP_TYPE === "development";
       if (isDev) {
@@ -143,9 +144,11 @@ const ProductDetailsModel: FC<{ setOpen: (value: boolean) => void, selectedDiamo
           <button onClick={() => handleClick('addCart')} className="border py-4 px-6 rounded-lg border-[var(--theme-alter-color)] text-[var(--theme-alter-color)] w-full">
             Add to Cart
           </button>
-          <button onClick={() => handleClick('buyNow')} className="bg-black py-4 px-6 border rounded-lg text-white w-full">
+          { settings?.enable_buy_now === "1" && (
+            <button onClick={() => handleClick('buyNow')} className="bg-black py-4 px-6 border rounded-lg text-white w-full">
             Buy Now
           </button>
+          )}
         </div>
       </div>
     </div>
