@@ -50,3 +50,16 @@ export const EARTH_CREATED_TITLE = "Earth Created";
 export const EARTH_CREATED = "earth";
 export const LAB_CREATED_TITLE = "Lab Created";
 export const LAB = "lab";
+
+export const SETTINGS_OBJ = {
+    "grid_per_page": "12",
+    "list_per_page": "10",
+    "list_mode": "grid",
+    "default_sort_option": "shape",
+    "sort_options": ["shape","color","polish","clarity"],
+    "enable_buy_now": "1",
+    "enable_compare": "1",
+    "enable_infinity_scroll": "1",
+    "primary_color": "#CECECE",
+    "secondary_color": "#CECECE"
+}

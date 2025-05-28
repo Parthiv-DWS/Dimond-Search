@@ -112,3 +112,10 @@ export type GlobalFilterType = {
   colorType: string;
   dimondCreatedBy: string;
 };
+
+export type SettingsType = {
+  enable_buy_now: string;
+  enable_compare: string;
+  enable_infinity_scroll: string;
+  list_mode: string;
+}
